@@ -16,8 +16,6 @@ var DeviceOrientationController = function(object) {
   this.deviceOrientation = {};
   this.screenOrientation = 0;
 
-  var delta, lastTick = 0;
-
   var isUserInteracting = false,
       onPointerDownPointerX = 0, onPointerDownPointerY = 0,
       lon = 0, lat = 0,
