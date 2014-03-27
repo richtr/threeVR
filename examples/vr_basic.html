@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>
+      deviceorientation - quaternion &amp; rotation matrix manipulation - w/ three.js
+    </title>
+    <style type="text/css">
+      body {
+        background-color: #000000;
+        margin: 0;
+        cursor: move;
+        overflow: hidden;
+      }
+
+      #extra {
+        position: fixed;
+        width: 100%;
+        color: #ffffff;
+        padding: 5px;
+        font-family: Monospace;
+        font-size: 13px;
+        font-weight: bold;
+        text-align: center;
+        z-index: 1;
+        bottom: 3px;
+      }
+
+      #extra a {
+        display: inline-block;
+        padding: 2px 5px;
+        margin: 2px 5px;
+      }
+
+      #controller {
+        background-color: #fff;
+        color: #000;
+        border: 1px solid #000;
+        z-index: 2;
+      }
+
+      #controllertype {
+        background-color: #ccc;
+        color: #000;
+        border: 1px solid #999;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="../lib/three.min.js" type="text/javascript"></script>
+    <script src="../lib/CSS3DRenderer.js" type="text/javascript"></script>
+
+    <script src="../js/DeviceOrientationController.js" type="text/javascript"></script>
+
+    <div id="extra">
+      DeviceOrientation Control: <a id="controllertype" href="#" name="controllertype">Quaternions</a>
+    </div>
+
+    <script type="text/javascript">
+
+      var camera, scene, renderer, controls;
+
+      function init() {
+
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+
+        // Initiate our deviceorientation controllers
+        controls = new DeviceOrientationController( camera ); // uses *quaternions* by default
+
+        controls.connect();
+
+        var deviceOrientationTypeSelectorEl = document.querySelector('#controllertype');
+
+        // Allow rotation matrix to quaternion switching for this demo
+        deviceOrientationTypeSelectorEl.onclick = deviceOrientationTypeSelectorEl.ontouchstart = function( event ) {
+          event.preventDefault();
+
+          if( controls.useQuaternions === true ) {
+            deviceOrientationTypeSelectorEl.textContent = 'Rotation Matrix';
+            controls.useQuaternions = false;
+          } else {
+            deviceOrientationTypeSelectorEl.textContent = 'Quaternions';
+            controls.useQuaternions = true;
+          }
+        };
+
+        // Render three.js world
+
+        scene = new THREE.Scene();
+
+        var sides = [
+          {
+            url: '../lib/textures/cube/Park2/posx.jpg',
+            position: [ -512, 0, 0 ],
+            rotation: [ 0, Math.PI / 2, 0 ]
+          },
+          {
+            url: '../lib/textures/cube/Park2/negx.jpg',
+            position: [ 512, 0, 0 ],
+            rotation: [ 0, -Math.PI / 2, 0 ]
+          },
+          {
+            url: '../lib/textures/cube/Park2/posy.jpg',
+            position: [ 0,  512, 0 ],
+            rotation: [ Math.PI / 2, 0, Math.PI ]
+          },
+          {
+            url: '../lib/textures/cube/Park2/negy.jpg',
+            position: [ 0, -512, 0 ],
+            rotation: [ - Math.PI / 2, 0, Math.PI ]
+          },
+          {
+            url: '../lib/textures/cube/Park2/posz.jpg',
+            position: [ 0, 0,  512 ],
+            rotation: [ 0, Math.PI, 0 ]
+          },
+          {
+            url: '../lib/textures/cube/Park2/negz.jpg',
+            position: [ 0, 0, -512 ],
+            rotation: [ 0, 0, 0 ]
+          }
+        ];
+
+        var cube = new THREE.Object3D();
+        scene.add( cube );
+
+        for ( var i = 0; i < sides.length; i ++ ) {
+
+          var side = sides[ i ];
+
+          var element = document.createElement( 'img' );
+          element.width = 1026; // 2 pixels extra to close the gap.
+          element.src = side.url;
+
+          var object = new THREE.CSS3DObject( element );
+          object.position.fromArray( side.position );
+          object.rotation.fromArray( side.rotation );
+          cube.add( object );
+
+        }
+
+        renderer = new THREE.CSS3DRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+
+        window.addEventListener( 'resize', onWindowResize, false );
+
+      }
+
+      function onWindowResize() {
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+      }
+
+      function animate() {
+
+        controls.update();
+        renderer.render( scene, camera );
+
+        requestAnimationFrame( animate );
+
+      }
+
+      init();
+      animate();
+
+    </script>
+  </body>
+</html>
