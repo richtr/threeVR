@@ -64,12 +64,12 @@ var DeviceOrientationController = function( camera, domElement ) {
   }.bind(this);
 
   this.onDocumentMouseUp = function(event) {
-    isUserInteracting = false;
-
     window.addEventListener('deviceorientation', this.onDeviceOrientationChange, false);
 
     this.element.removeEventListener('mousemove', this.onDocumentMouseMove, false);
     this.element.removeEventListener('mouseup', this.onDocumentMouseUp, false);
+
+    isUserInteracting = false;
   }.bind(this);
 
   this.onDocumentTouchStart = function(event) {
@@ -94,8 +94,6 @@ var DeviceOrientationController = function( camera, domElement ) {
 
       this.element.addEventListener('touchmove', this.onDocumentTouchMove, false);
       this.element.addEventListener('touchend', this.onDocumentTouchEnd, false);
-
-      window.removeEventListener('deviceorientation', this.onDeviceOrientationChange, false);
     }
   }.bind(this);
 
@@ -105,12 +103,10 @@ var DeviceOrientationController = function( camera, domElement ) {
   }.bind(this);
 
   this.onDocumentTouchEnd = function(event) {
-    isUserInteracting = false;
-
-    window.addEventListener('deviceorientation', this.onDeviceOrientationChange, false);
-
     this.element.removeEventListener('touchmove', this.onDocumentTouchMove, false);
     this.element.removeEventListener('touchend', this.onDocumentTouchEnd, false);
+
+    isUserInteracting = false;
   }.bind(this);
 
   var createQuaternion = function() {
