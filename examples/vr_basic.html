@@ -89,41 +89,56 @@
 
         scene = new THREE.Scene();
 
+        // Choose a random number between 2 and 3
+        var id = Math.floor(Math.random() * (3 - 2 + 1)) + 2;
+
+        var cube = generateCubeMap('Park' + id + 'Small');
+        scene.add( cube );
+
+        renderer = new THREE.CSS3DRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+
+        window.addEventListener( 'resize', onWindowResize, false );
+
+      }
+
+      function generateCubeMap( folderName ) {
+
         var sides = [
           {
-            url: './textures/cube/Park2Small/posx.jpg',
+            url: './textures/cube/' + folderName + '/posx.jpg',
             position: [ -512, 0, 0 ],
             rotation: [ 0, Math.PI / 2, 0 ]
           },
           {
-            url: './textures/cube/Park2Small/negx.jpg',
+            url: './textures/cube/' + folderName + '/negx.jpg',
             position: [ 512, 0, 0 ],
             rotation: [ 0, -Math.PI / 2, 0 ]
           },
           {
-            url: './textures/cube/Park2Small/posy.jpg',
+            url: './textures/cube/' + folderName + '/posy.jpg',
             position: [ 0,  512, 0 ],
             rotation: [ Math.PI / 2, 0, Math.PI ]
           },
           {
-            url: './textures/cube/Park2Small/negy.jpg',
+            url: './textures/cube/' + folderName + '/negy.jpg',
             position: [ 0, -512, 0 ],
             rotation: [ - Math.PI / 2, 0, Math.PI ]
           },
           {
-            url: './textures/cube/Park2Small/posz.jpg',
+            url: './textures/cube/' + folderName + '/posz.jpg',
             position: [ 0, 0,  512 ],
             rotation: [ 0, Math.PI, 0 ]
           },
           {
-            url: './textures/cube/Park2Small/negz.jpg',
+            url: './textures/cube/' + folderName + '/negz.jpg',
             position: [ 0, 0, -512 ],
             rotation: [ 0, 0, 0 ]
           }
         ];
 
         var cube = new THREE.Object3D();
-        scene.add( cube );
 
         for ( var i = 0; i < sides.length; i ++ ) {
 
@@ -140,11 +155,7 @@
 
         }
 
-        renderer = new THREE.CSS3DRenderer();
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-
-        window.addEventListener( 'resize', onWindowResize, false );
+        return cube;
 
       }
 
