@@ -51,8 +51,6 @@ var DeviceOrientationController = function( camera, domElement ) {
 
     this.element.addEventListener('mousemove', this.onDocumentMouseMove, false);
     this.element.addEventListener('mouseup', this.onDocumentMouseUp, false);
-
-    window.removeEventListener('deviceorientation', this.onDeviceOrientationChange, false);
   }.bind(this);
 
   this.onDocumentMouseMove = function(event) {
@@ -61,8 +59,6 @@ var DeviceOrientationController = function( camera, domElement ) {
   }.bind(this);
 
   this.onDocumentMouseUp = function(event) {
-    window.addEventListener('deviceorientation', this.onDeviceOrientationChange, false);
-
     this.element.removeEventListener('mousemove', this.onDocumentMouseMove, false);
     this.element.removeEventListener('mouseup', this.onDocumentMouseUp, false);
 
