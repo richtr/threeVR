@@ -24,7 +24,7 @@ var DeviceOrientationController = function( object, domElement ) {
   this.useQuaternions = true; // use quaternions for orientation calculation by default
 
   this.deviceOrientation = {};
-  this.screenOrientation = 0;
+  this.screenOrientation = window.orientation || 0;
 
   // Manual rotate override components
   var startX = 0, startY = 0,
@@ -38,8 +38,30 @@ var DeviceOrientationController = function( object, domElement ) {
       zoomP2 = new THREE.Vector2(),
       tmpFOV;
 
-  var STATE = { AUTO: 0, MANUAL_ROTATE: 1, MANUAL_ZOOM: 2 };
-  var appState = STATE.AUTO;
+  var CONTROLLER_STATE = { AUTO: 0, MANUAL_ROTATE: 1, MANUAL_ZOOM: 2 };
+
+  var appState = CONTROLLER_STATE.AUTO;
+
+  var CONTROLLER_EVENT = {
+    CALIBRATE_COMPASS:  'compassneedscalibration',
+    SCREEN_ORIENTATION: 'orientationchange',
+    MANUAL_CONTROL:     'userinteraction', // userinteractionstart, userinteractionend
+    ZOOM_CONTROL:       'zoom',            // zoomstart, zoomend
+    ROTATE_CONTROL:     'rotate',          // rotatestart, rotateend
+  };
+
+  var fireEvent = function () {
+    var eventData;
+
+    return function ( name ) {
+      eventData = arguments || {};
+
+      eventData.type = name;
+      eventData.target = this;
+
+      this.dispatchEvent( eventData );
+    };
+  }.bind( this )();
 
   this.onDeviceOrientationChange = function ( event ) {
     this.deviceOrientation = event;
@@ -47,6 +69,12 @@ var DeviceOrientationController = function( object, domElement ) {
 
   this.onScreenOrientationChange = function () {
     this.screenOrientation = window.orientation || 0;
+
+    fireEvent( CONTROLLER_EVENT.SCREEN_ORIENTATION );
+  }.bind( this );
+
+  this.onCompassNeedsCalibration = function () {
+    fireEvent( CONTROLLER_EVENT.CALIBRATE_COMPASS );
   }.bind( this );
 
   this.onDocumentMouseDown = function ( event ) {
@@ -54,7 +82,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
     event.preventDefault();
 
-    appState = STATE.MANUAL_ROTATE;
+    appState = CONTROLLER_STATE.MANUAL_ROTATE;
 
     tmpQuat.copy( this.object.quaternion );
 
@@ -67,6 +95,8 @@ var DeviceOrientationController = function( object, domElement ) {
 
     this.element.addEventListener( 'mousemove', this.onDocumentMouseMove, false );
     this.element.addEventListener( 'mouseup', this.onDocumentMouseUp, false );
+
+    fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'start' );
   }.bind( this );
 
   this.onDocumentMouseMove = function ( event ) {
@@ -78,7 +108,9 @@ var DeviceOrientationController = function( object, domElement ) {
     this.element.removeEventListener( 'mousemove', this.onDocumentMouseMove, false );
     this.element.removeEventListener( 'mouseup', this.onDocumentMouseUp, false );
 
-    appState = STATE.AUTO;
+    appState = CONTROLLER_STATE.AUTO;
+
+    fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'end' );
   }.bind( this );
 
   this.onDocumentTouchStart = function ( event ) {
@@ -89,7 +121,7 @@ var DeviceOrientationController = function( object, domElement ) {
       case 1: // ROTATE
         if ( this.enableManualDrag !== true ) return;
 
-        appState = STATE.MANUAL_ROTATE;
+        appState = CONTROLLER_STATE.MANUAL_ROTATE;
 
         tmpQuat.copy( this.object.quaternion );
 
@@ -103,12 +135,14 @@ var DeviceOrientationController = function( object, domElement ) {
         this.element.addEventListener( 'touchmove', this.onDocumentTouchMove, false );
         this.element.addEventListener( 'touchend', this.onDocumentTouchEnd, false );
 
+        fireEvent( CONTROLLER_EVENT.ROTATE_CONTROL + 'start' );
+
         break;
 
       case 2: // ZOOM
         if ( this.enableManualZoom !== true ) return;
 
-        appState = STATE.MANUAL_ZOOM;
+        appState = CONTROLLER_STATE.MANUAL_ZOOM;
 
         tmpFOV = this.object.fov;
 
@@ -119,6 +153,8 @@ var DeviceOrientationController = function( object, domElement ) {
 
         this.element.addEventListener( 'touchmove', this.onDocumentTouchMove, false );
         this.element.addEventListener( 'touchend', this.onDocumentTouchEnd, false );
+
+        fireEvent( CONTROLLER_EVENT.ZOOM_CONTROL + 'start' );
 
         break;
     }
@@ -142,13 +178,21 @@ var DeviceOrientationController = function( object, domElement ) {
     this.element.removeEventListener( 'touchmove', this.onDocumentTouchMove, false );
     this.element.removeEventListener( 'touchend', this.onDocumentTouchEnd, false );
 
-    if ( appState === STATE.MANUAL_ZOOM ) {
+    if ( appState === CONTROLLER_STATE.MANUAL_ROTATE ) {
 
-        this.object.fov = tmpFOV; // re-instate original object FOV
+      appState = CONTROLLER_STATE.AUTO; // reset control state
+
+      fireEvent( CONTROLLER_EVENT.ROTATE_CONTROL + 'end' );
+
+    } else if ( appState === CONTROLLER_STATE.MANUAL_ZOOM ) {
+
+      this.object.fov = tmpFOV; // re-instate original object FOV
+
+      appState = CONTROLLER_STATE.AUTO; // reset control state
+
+      fireEvent( CONTROLLER_EVENT.ZOOM_CONTROL + 'end' );
 
     }
-
-    appState = STATE.AUTO; // reset control state
   }.bind( this );
 
   var createQuaternion = function () {
@@ -237,7 +281,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
     return function () {
 
-      if ( appState === STATE.MANUAL_ROTATE ) {
+      if ( appState === CONTROLLER_STATE.MANUAL_ROTATE ) {
 
         lat = (startY - currentY) * scrollSpeedY;
         lon = (startX - currentX) * scrollSpeedX;
@@ -255,7 +299,7 @@ var DeviceOrientationController = function( object, domElement ) {
         //this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
         this.object.quaternion.copy( objQuat ); // no smoothing
 
-      } else if ( appState === STATE.MANUAL_ZOOM ) {
+      } else if ( appState === CONTROLLER_STATE.MANUAL_ZOOM ) {
 
         zoomCurrent = zoomP1.distanceTo( zoomP2 );
 
@@ -325,7 +369,7 @@ var DeviceOrientationController = function( object, domElement ) {
   }();
 
   this.update = function () {
-    if ( appState === STATE.AUTO ) {
+    if ( appState === CONTROLLER_STATE.AUTO ) {
       this.updateDeviceMove();
     } else {
       this.updateManualMove();
@@ -333,10 +377,10 @@ var DeviceOrientationController = function( object, domElement ) {
   };
 
   this.connect = function () {
-    this.onScreenOrientationChange(); // run once on load
-
     window.addEventListener( 'orientationchange', this.onScreenOrientationChange, false );
     window.addEventListener( 'deviceorientation', this.onDeviceOrientationChange, false );
+
+    window.addEventListener( 'compassneedscalibration', this.onCompassNeedsCalibration, false );
 
     this.element.addEventListener( 'mousedown', this.onDocumentMouseDown, false );
     this.element.addEventListener( 'touchstart', this.onDocumentTouchStart, false );
@@ -350,8 +394,12 @@ var DeviceOrientationController = function( object, domElement ) {
     window.removeEventListener( 'orientationchange', this.onScreenOrientationChange, false );
     window.removeEventListener( 'deviceorientation', this.onDeviceOrientationChange, false );
 
+    window.removeEventListener( 'compassneedscalibration', this.onCompassNeedsCalibration, false );
+
     this.element.removeEventListener( 'mousedown', this.onDocumentMouseDown, false );
     this.element.removeEventListener( 'touchstart', this.onDocumentTouchStart, false );
   };
 
 };
+
+DeviceOrientationController.prototype = Object.create( THREE.EventDispatcher.prototype );
