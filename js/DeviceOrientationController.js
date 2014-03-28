@@ -182,8 +182,8 @@ var DeviceOrientationController = function(object) {
 
       objQuat.multiplyQuaternions(tmpQuat, rotQuat);
 
-      this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
-      //this.object.quaternion.copy( objQuat ); // no smoothing
+      //this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
+      this.object.quaternion.copy( objQuat ); // no smoothing
 
     };
 
@@ -210,8 +210,8 @@ var DeviceOrientationController = function(object) {
 
         objQuat = createQuaternion(alpha, beta, gamma, orient);
 
-        this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
-        //this.object.quaternion.copy( objQuat ); // no smoothing
+        //this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
+        this.object.quaternion.copy( objQuat ); // no smoothing
 
       } else {
 
