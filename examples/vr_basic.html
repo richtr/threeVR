@@ -83,20 +83,19 @@
         controls = new DeviceOrientationController( camera, renderer.domElement );
         controls.connect();
 
-        var deviceOrientationTypeSelectorEl = document.querySelector('#controllertype');
-
         // Allow rotation matrix to quaternion switching for this demo
-        deviceOrientationTypeSelectorEl.onclick = deviceOrientationTypeSelectorEl.ontouchstart = function( event ) {
+        var switchDeviceModelEl = document.querySelector('#controllertype');
+        switchDeviceModelEl.addEventListener('click', function( event ) {
           event.preventDefault();
 
           if( controls.useQuaternions === true ) {
-            deviceOrientationTypeSelectorEl.textContent = 'Rotation Matrix';
+            switchDeviceModelEl.textContent = 'Rotation Matrix';
             controls.useQuaternions = false;
           } else {
-            deviceOrientationTypeSelectorEl.textContent = 'Quaternions';
+            switchDeviceModelEl.textContent = 'Quaternions';
             controls.useQuaternions = true;
           }
-        };
+        }, false);
 
         window.addEventListener( 'resize', onWindowResize, false );
 
