@@ -205,6 +205,8 @@ var DeviceOrientationController = function( camera, domElement ) {
 
   this.updateDeviceMove = function() {
 
+    var adjustedAlpha;
+
     var alpha, beta, gamma, orient;
 
     var objQuat; // when we use quaternions
@@ -215,7 +217,18 @@ var DeviceOrientationController = function( camera, domElement ) {
 
       if (this.freeze) return;
 
-      alpha  = THREE.Math.degToRad(this.deviceOrientation.alpha || 0); // Z
+      // iOS world-accurate 'alpha' fix
+      try {
+        adjustedAlpha = this.deviceOrientation.webkitCompassAccuracy !== undefined
+                          && this.deviceOrientation.webkitCompassAccuracy !== null
+                            && this.deviceOrientation.webkitCompassAccuracy !== -1
+                              ? 360 - (this.deviceOrientation.webkitCompassHeading || 360)
+                                : this.deviceOrientation.alpha;
+      } catch(e) {
+        adjustedAlpha = this.deviceOrientation.alpha;
+      }
+
+      alpha  = THREE.Math.degToRad(adjustedAlpha                || 0); // Z
       beta   = THREE.Math.degToRad(this.deviceOrientation.beta  || 0); // X'
       gamma  = THREE.Math.degToRad(this.deviceOrientation.gamma || 0); // Y''
       orient = THREE.Math.degToRad(this.screenOrientation       || 0); // O
