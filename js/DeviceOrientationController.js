@@ -20,8 +20,8 @@ var DeviceOrientationController = function( camera, domElement ) {
   this.screenOrientation = 0;
 
   var isUserInteracting = false,
-      onPointerDownPointerX = 0, onPointerDownPointerY = 0,
-      lon = 0, lat = 0,
+      startX = 0, startY = 0,
+      currentX = 0, currentY = 0,
       scrollSpeedX, scrollSpeedY,
       tmpQuat = new THREE.Quaternion();
 
@@ -42,11 +42,8 @@ var DeviceOrientationController = function( camera, domElement ) {
 
     isUserInteracting = true;
 
-    onPointerDownPointerX = event.clientX;
-    onPointerDownPointerY = event.clientY;
-
-    lon = 0;
-    lat = 0;
+    startX = currentX = event.clientX;
+    startY = currentY = event.clientY;
 
     // Set consistent scroll speed based on current viewport width/height
     scrollSpeedX = (1200 / window.innerWidth) * 0.1;
@@ -59,8 +56,8 @@ var DeviceOrientationController = function( camera, domElement ) {
   }.bind(this);
 
   this.onDocumentMouseMove = function(event) {
-    lon = (onPointerDownPointerX - event.clientX) * scrollSpeedX;
-    lat = (onPointerDownPointerY - event.clientY) * scrollSpeedY;
+    currentX = event.clientX;
+    currentY = event.clientY;
   }.bind(this);
 
   this.onDocumentMouseUp = function(event) {
@@ -82,11 +79,8 @@ var DeviceOrientationController = function( camera, domElement ) {
 
       isUserInteracting = true;
 
-      onPointerDownPointerX = event.touches[0].pageX;
-      onPointerDownPointerY = event.touches[0].pageY;
-
-      lon = 0;
-      lat = 0;
+      startX = currentX = event.touches[0].pageX;
+      startY = currentY = event.touches[0].pageY;
 
       // Set consistent scroll speed based on current viewport width/height
       scrollSpeedX = (1200 / window.innerWidth) * 0.1;
@@ -98,8 +92,8 @@ var DeviceOrientationController = function( camera, domElement ) {
   }.bind(this);
 
   this.onDocumentTouchMove = function(event) {
-    lon = (onPointerDownPointerX - event.touches[0].pageX) * scrollSpeedX;
-    lat = (onPointerDownPointerY - event.touches[0].pageY) * scrollSpeedY;
+    currentX = event.touches[0].pageX;
+    currentY = event.touches[0].pageY;
   }.bind(this);
 
   this.onDocumentTouchEnd = function(event) {
@@ -189,7 +183,12 @@ var DeviceOrientationController = function( camera, domElement ) {
     var rotQuat = new THREE.Quaternion();
     var objQuat = new THREE.Quaternion();
 
+    var lat, lon;
+
     return function() {
+
+      lat = (startY - currentY) * scrollSpeedY;
+      lon = (startX - currentX) * scrollSpeedX;
 
       rotation.set(
         THREE.Math.degToRad(lat),
