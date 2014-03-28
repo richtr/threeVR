@@ -60,7 +60,7 @@ var DeviceOrientationController = function( object, domElement ) {
       eventData.target = this;
 
       this.dispatchEvent( eventData );
-    };
+    }.bind( this );
   }.bind( this )();
 
   this.onDeviceOrientationChange = function ( event ) {
