@@ -38,69 +38,70 @@ var DeviceOrientationController = function( object, domElement ) {
       zoomP2 = new THREE.Vector2(),
       tmpFOV;
 
-  var STATE = { DEVICE: -1, MANUAL_ROTATE: 0, MANUAL_ZOOM: 1 };
-  var appState = STATE.DEVICE;
+  var STATE = { AUTO: 0, MANUAL_ROTATE: 1, MANUAL_ZOOM: 2 };
+  var appState = STATE.AUTO;
 
-  this.onDeviceOrientationChange = function(rawEvtData) {
-    this.deviceOrientation = rawEvtData;
-  }.bind(this);
+  this.onDeviceOrientationChange = function ( event ) {
+    this.deviceOrientation = event;
+  }.bind( this );
 
-  this.onScreenOrientationChange = function() {
+  this.onScreenOrientationChange = function () {
     this.screenOrientation = window.orientation || 0;
-  }.bind(this);
+  }.bind( this );
 
-  this.onDocumentMouseDown = function(event) {
+  this.onDocumentMouseDown = function ( event ) {
     if ( this.enableManualDrag !== true ) return;
 
     event.preventDefault();
 
     appState = STATE.MANUAL_ROTATE;
 
-    tmpQuat.copy(this.object.quaternion);
+    tmpQuat.copy( this.object.quaternion );
 
     startX = currentX = event.clientX;
     startY = currentY = event.clientY;
 
     // Set consistent scroll speed based on current viewport width/height
-    scrollSpeedX = (1200 / window.innerWidth) * 0.1;
-    scrollSpeedY = (800 / window.innerHeight) * 0.1;
+    scrollSpeedX = ( 1200 / window.innerWidth ) * 0.1;
+    scrollSpeedY = ( 800 / window.innerHeight ) * 0.1;
 
-    this.element.addEventListener('mousemove', this.onDocumentMouseMove, false);
-    this.element.addEventListener('mouseup', this.onDocumentMouseUp, false);
-  }.bind(this);
+    this.element.addEventListener( 'mousemove', this.onDocumentMouseMove, false );
+    this.element.addEventListener( 'mouseup', this.onDocumentMouseUp, false );
+  }.bind( this );
 
-  this.onDocumentMouseMove = function(event) {
+  this.onDocumentMouseMove = function ( event ) {
     currentX = event.clientX;
     currentY = event.clientY;
-  }.bind(this);
+  }.bind( this );
 
-  this.onDocumentMouseUp = function(event) {
-    this.element.removeEventListener('mousemove', this.onDocumentMouseMove, false);
-    this.element.removeEventListener('mouseup', this.onDocumentMouseUp, false);
+  this.onDocumentMouseUp = function ( event ) {
+    this.element.removeEventListener( 'mousemove', this.onDocumentMouseMove, false );
+    this.element.removeEventListener( 'mouseup', this.onDocumentMouseUp, false );
 
-    appState = STATE.DEVICE;
-  }.bind(this);
+    appState = STATE.AUTO;
+  }.bind( this );
 
-  this.onDocumentTouchStart = function(event) {
+  this.onDocumentTouchStart = function ( event ) {
     event.preventDefault();
+    event.stopPropagation();
 
-    switch( event.touches.length ) {
+    switch ( event.touches.length ) {
       case 1: // ROTATE
         if ( this.enableManualDrag !== true ) return;
 
         appState = STATE.MANUAL_ROTATE;
 
-        tmpQuat.copy(this.object.quaternion);
+        tmpQuat.copy( this.object.quaternion );
 
-        startX = currentX = event.touches[0].pageX;
-        startY = currentY = event.touches[0].pageY;
+        startX = currentX = event.touches[ 0 ].pageX;
+        startY = currentY = event.touches[ 0 ].pageY;
 
         // Set consistent scroll speed based on current viewport width/height
-        scrollSpeedX = (1200 / window.innerWidth) * 0.1;
-        scrollSpeedY = (800 / window.innerHeight) * 0.1;
+        scrollSpeedX = ( 1200 / window.innerWidth ) * 0.1;
+        scrollSpeedY = ( 800 / window.innerHeight ) * 0.1;
 
-        this.element.addEventListener('touchmove', this.onDocumentTouchMove, false);
-        this.element.addEventListener('touchend', this.onDocumentTouchEnd, false);
+        this.element.addEventListener( 'touchmove', this.onDocumentTouchMove, false );
+        this.element.addEventListener( 'touchend', this.onDocumentTouchEnd, false );
 
         break;
 
@@ -111,71 +112,72 @@ var DeviceOrientationController = function( object, domElement ) {
 
         tmpFOV = this.object.fov;
 
-        zoomP1.set(event.touches[0].pageX, event.touches[0].pageY);
-        zoomP2.set(event.touches[1].pageX, event.touches[1].pageY);
+        zoomP1.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+        zoomP2.set( event.touches[ 1 ].pageX, event.touches[ 1 ].pageY );
 
         zoomStart = zoomCurrent = zoomP1.distanceTo( zoomP2 );
 
-        this.element.addEventListener('touchmove', this.onDocumentTouchMove, false);
-        this.element.addEventListener('touchend', this.onDocumentTouchEnd, false);
+        this.element.addEventListener( 'touchmove', this.onDocumentTouchMove, false );
+        this.element.addEventListener( 'touchend', this.onDocumentTouchEnd, false );
 
         break;
     }
-  }.bind(this);
+  }.bind( this );
 
-  this.onDocumentTouchMove = function(event) {
+  this.onDocumentTouchMove = function ( event ) {
     switch( event.touches.length ) {
       case 1:
-        currentX = event.touches[0].pageX;
-        currentY = event.touches[0].pageY;
+        currentX = event.touches[ 0 ].pageX;
+        currentY = event.touches[ 0 ].pageY;
         break;
 
       case 2:
-        zoomP1.set(event.touches[0].pageX, event.touches[0].pageY);
-        zoomP2.set(event.touches[1].pageX, event.touches[1].pageY);
-        zoomCurrent = zoomP1.distanceTo( zoomP2 );
+        zoomP1.set( event.touches[ 0 ].pageX, event.touches[ 0 ].pageY );
+        zoomP2.set( event.touches[ 1 ].pageX, event.touches[ 1 ].pageY );
         break;
     }
-  }.bind(this);
+  }.bind( this );
 
-  this.onDocumentTouchEnd = function(event) {
-    this.element.removeEventListener('touchmove', this.onDocumentTouchMove, false);
-    this.element.removeEventListener('touchend', this.onDocumentTouchEnd, false);
+  this.onDocumentTouchEnd = function ( event ) {
+    this.element.removeEventListener( 'touchmove', this.onDocumentTouchMove, false );
+    this.element.removeEventListener( 'touchend', this.onDocumentTouchEnd, false );
 
     if ( appState === STATE.MANUAL_ZOOM ) {
-        this.object.fov = tmpFOV; // reset object FOV
+
+        this.object.fov = tmpFOV; // re-instate original object FOV
+
     }
 
-    appState = STATE.DEVICE; // reset control state
-  }.bind(this);
+    appState = STATE.AUTO; // reset control state
+  }.bind( this );
 
-  var createQuaternion = function() {
+  var createQuaternion = function () {
 
     var finalQuaternion = new THREE.Quaternion();
 
-    var euler = new THREE.Euler();
+    var deviceEuler = new THREE.Euler();
 
     var screenTransform = new THREE.Quaternion();
 
-    var worldTransform = new THREE.Quaternion(-Math.sqrt(0.5), 0, 0, Math.sqrt(0.5)); // - PI/2 around the x-axis
+    var worldTransform = new THREE.Quaternion( -Math.sqrt(0.5), 0, 0, Math.sqrt(0.5) ); // - PI/2 around the x-axis
 
     var minusHalfAngle = 0;
 
-    return function(alpha, beta, gamma, screenOrientation) {
+    return function( alpha, beta, gamma, screenOrientation ) {
 
-      euler.set(beta, alpha, -gamma, 'YXZ');
+      deviceEuler.set( beta, alpha, -gamma, 'YXZ' );
 
-      finalQuaternion.setFromEuler(euler);
+      finalQuaternion.setFromEuler( deviceEuler );
 
       minusHalfAngle = -screenOrientation / 2;
 
-      screenTransform.set(0, 0, Math.sin(minusHalfAngle), Math.cos(minusHalfAngle));
+      screenTransform.set( 0, 0, Math.sin( minusHalfAngle ), Math.cos( minusHalfAngle ) );
 
-      if (alpha !== 0) {
-        finalQuaternion.multiply(worldTransform);
+      if ( alpha !== 0 ) {
+        finalQuaternion.multiply( worldTransform );
       }
 
-      finalQuaternion.multiply(screenTransform);
+      finalQuaternion.multiply( screenTransform );
 
       return finalQuaternion;
 
@@ -183,37 +185,37 @@ var DeviceOrientationController = function( object, domElement ) {
 
   }();
 
-  var createRotationMatrix = function() {
+  var createRotationMatrix = function () {
 
     var finalMatrix = new THREE.Matrix4();
 
     var deviceEuler = new THREE.Euler();
     var screenEuler = new THREE.Euler();
-    var worldEuler = new THREE.Euler(-Math.PI / 2, 0, 0, 'YXZ'); // - PI/2 around the x-axis
+    var worldEuler = new THREE.Euler( -Math.PI / 2, 0, 0, 'YXZ' ); // - PI/2 around the x-axis
 
     var screenTransform = new THREE.Matrix4();
 
     var worldTransform = new THREE.Matrix4();
     worldTransform.makeRotationFromEuler(worldEuler);
 
-    return function(alpha, beta, gamma, screenOrientation) {
+    return function (alpha, beta, gamma, screenOrientation) {
 
-      deviceEuler.set(beta, alpha, -gamma, 'YXZ');
+      deviceEuler.set( beta, alpha, -gamma, 'YXZ' );
 
       finalMatrix.identity();
 
-      finalMatrix.makeRotationFromEuler(deviceEuler);
+      finalMatrix.makeRotationFromEuler( deviceEuler );
 
-      screenEuler.set(0, -screenOrientation, 0, 'YXZ');
+      screenEuler.set( 0, -screenOrientation, 0, 'YXZ' );
 
       screenTransform.identity();
 
-      screenTransform.makeRotationFromEuler(screenEuler);
+      screenTransform.makeRotationFromEuler( screenEuler );
 
-      finalMatrix.multiply(screenTransform);
+      finalMatrix.multiply( screenTransform );
 
-      if (alpha !== 0) {
-        finalMatrix.multiply(worldTransform);
+      if ( alpha !== 0 ) {
+        finalMatrix.multiply( worldTransform );
       }
 
       return finalMatrix;
@@ -222,9 +224,9 @@ var DeviceOrientationController = function( object, domElement ) {
 
   }();
 
-  this.updateManualMove = function() {
+  this.updateManualMove = function () {
 
-    var rotation = new THREE.Euler(0, 0, 0, "YXZ");
+    var rotation = new THREE.Euler( 0, 0, 0, 'YXZ' );
 
     var rotQuat = new THREE.Quaternion();
     var objQuat = new THREE.Quaternion();
@@ -233,7 +235,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
     var zoomFactor, minZoomFactor = 1; // maxZoomFactor = Infinity
 
-    return function() {
+    return function () {
 
       if ( appState === STATE.MANUAL_ROTATE ) {
 
@@ -255,11 +257,16 @@ var DeviceOrientationController = function( object, domElement ) {
 
       } else if ( appState === STATE.MANUAL_ZOOM ) {
 
+        zoomCurrent = zoomP1.distanceTo( zoomP2 );
+
         zoomFactor = zoomStart / zoomCurrent;
 
         if ( zoomFactor <= minZoomFactor ) {
+
           this.object.fov = tmpFOV * zoomFactor;
+
           this.object.updateProjectionMatrix();
+
         }
 
       }
@@ -289,27 +296,27 @@ var DeviceOrientationController = function( object, domElement ) {
                             && this.deviceOrientation.webkitCompassAccuracy !== -1
                               ? 360 - (this.deviceOrientation.webkitCompassHeading || 360)
                                 : this.deviceOrientation.alpha;
-      } catch(e) {
+      } catch ( e ) {
         adjustedAlpha = this.deviceOrientation.alpha;
       }
 
-      alpha  = THREE.Math.degToRad(adjustedAlpha                || 0); // Z
-      beta   = THREE.Math.degToRad(this.deviceOrientation.beta  || 0); // X'
-      gamma  = THREE.Math.degToRad(this.deviceOrientation.gamma || 0); // Y''
-      orient = THREE.Math.degToRad(this.screenOrientation       || 0); // O
+      alpha  = THREE.Math.degToRad( adjustedAlpha                || 0 ); // Z
+      beta   = THREE.Math.degToRad( this.deviceOrientation.beta  || 0 ); // X'
+      gamma  = THREE.Math.degToRad( this.deviceOrientation.gamma || 0 ); // Y''
+      orient = THREE.Math.degToRad( this.screenOrientation       || 0 ); // O
 
-      if (this.useQuaternions) {
+      if ( this.useQuaternions ) {
 
-        objQuat = createQuaternion(alpha, beta, gamma, orient);
+        objQuat = createQuaternion( alpha, beta, gamma, orient );
 
         //this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
         this.object.quaternion.copy( objQuat ); // no smoothing
 
       } else {
 
-        objMatrix = createRotationMatrix(alpha, beta, gamma, orient);
+        objMatrix = createRotationMatrix( alpha, beta, gamma, orient );
 
-        this.object.quaternion.setFromRotationMatrix(objMatrix);
+        this.object.quaternion.setFromRotationMatrix( objMatrix );
 
       }
 
@@ -317,34 +324,34 @@ var DeviceOrientationController = function( object, domElement ) {
 
   }();
 
-  this.update = function() {
-    if ( appState === STATE.DEVICE ) {
+  this.update = function () {
+    if ( appState === STATE.AUTO ) {
       this.updateDeviceMove();
     } else {
       this.updateManualMove();
     }
   };
 
-  this.connect = function() {
+  this.connect = function () {
     this.onScreenOrientationChange(); // run once on load
 
-    window.addEventListener('orientationchange', this.onScreenOrientationChange, false);
-    window.addEventListener('deviceorientation', this.onDeviceOrientationChange, false);
+    window.addEventListener( 'orientationchange', this.onScreenOrientationChange, false );
+    window.addEventListener( 'deviceorientation', this.onDeviceOrientationChange, false );
 
-    this.element.addEventListener('mousedown', this.onDocumentMouseDown, false);
-    this.element.addEventListener('touchstart', this.onDocumentTouchStart, false);
+    this.element.addEventListener( 'mousedown', this.onDocumentMouseDown, false );
+    this.element.addEventListener( 'touchstart', this.onDocumentTouchStart, false );
 
     this.freeze = false;
   };
 
-  this.disconnect = function() {
+  this.disconnect = function () {
     this.freeze = true;
 
-    window.removeEventListener('orientationchange', this.onScreenOrientationChange, false);
-    window.removeEventListener('deviceorientation', this.onDeviceOrientationChange, false);
+    window.removeEventListener( 'orientationchange', this.onScreenOrientationChange, false );
+    window.removeEventListener( 'deviceorientation', this.onDeviceOrientationChange, false );
 
-    this.element.removeEventListener('mousedown', this.onDocumentMouseDown, false);
-    this.element.removeEventListener('touchstart', this.onDocumentTouchStart, false);
+    this.element.removeEventListener( 'mousedown', this.onDocumentMouseDown, false );
+    this.element.removeEventListener( 'touchstart', this.onDocumentTouchStart, false );
   };
 
 };
