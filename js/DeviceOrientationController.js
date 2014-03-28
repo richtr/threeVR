@@ -12,7 +12,9 @@ var DeviceOrientationController = function( camera, domElement ) {
 
   this.freeze = true;
 
-  this.useQuaternions = true; // use quaternions by default
+  this.useQuaternions = true; // use quaternions for orientation calculation by default
+
+  this.enableManualDrag = true; // enable manual user drag override control by default
 
   this.deviceOrientation = {};
   this.screenOrientation = 0;
@@ -32,6 +34,8 @@ var DeviceOrientationController = function( camera, domElement ) {
   }.bind(this);
 
   this.onDocumentMouseDown = function(event) {
+    if ( this.enableManualDrag !== true ) return;
+
     event.preventDefault();
 
     tmpQuat.copy(this.object.quaternion);
@@ -69,6 +73,8 @@ var DeviceOrientationController = function( camera, domElement ) {
   }.bind(this);
 
   this.onDocumentTouchStart = function(event) {
+    if ( this.enableManualDrag !== true ) return;
+
     if (event.touches.length == 1) {
       event.preventDefault();
 
