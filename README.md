@@ -19,7 +19,7 @@ Create a new `DeviceOrientationController` object in JavaScript passing in your 
 Then call `connect()` to start the controller.
 
     <script>
-      controls = new DeviceOrientationController.js( camera, renderer.domElement );
+      controls = new DeviceOrientationController( camera, renderer.domElement );
       controls.connect();
     </script>
 
