@@ -25,11 +25,11 @@ var DeviceOrientationController = function( camera, domElement ) {
 
   this.onDeviceOrientationChangeEvent = function(rawEvtData) {
     this.deviceOrientation = rawEvtData;
-  };
+  }.bind(this);
 
   this.onScreenOrientationChangeEvent = function() {
     this.screenOrientation = window.orientation || 0;
-  };
+  }.bind(this);
 
   this.onDocumentMouseDown = function(event) {
     event.preventDefault();
@@ -47,18 +47,26 @@ var DeviceOrientationController = function( camera, domElement ) {
     // Set consistent scroll speed based on current viewport width/height
     scrollSpeedX = (1200 / window.innerWidth) * 0.1;
     scrollSpeedY = (800 / window.innerHeight) * 0.1;
-  };
+
+    this.element.addEventListener('mousemove', this.onDocumentMouseMove, false);
+    this.element.addEventListener('mouseup', this.onDocumentMouseUp, false);
+
+    window.removeEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
+  }.bind(this);
 
   this.onDocumentMouseMove = function(event) {
-    if (isUserInteracting === true) {
-      lon = (onPointerDownPointerX - event.clientX) * scrollSpeedX;
-      lat = (onPointerDownPointerY - event.clientY) * scrollSpeedY;
-    }
-  };
+    lon = (onPointerDownPointerX - event.clientX) * scrollSpeedX;
+    lat = (onPointerDownPointerY - event.clientY) * scrollSpeedY;
+  }.bind(this);
 
   this.onDocumentMouseUp = function(event) {
     isUserInteracting = false;
-  };
+
+    window.addEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
+
+    this.element.removeEventListener('mousemove', this.onDocumentMouseMove, false);
+    this.element.removeEventListener('mouseup', this.onDocumentMouseUp, false);
+  }.bind(this);
 
   this.onDocumentTouchStart = function(event) {
     if (event.touches.length == 1) {
@@ -77,19 +85,27 @@ var DeviceOrientationController = function( camera, domElement ) {
       // Set consistent scroll speed based on current viewport width/height
       scrollSpeedX = (1200 / window.innerWidth) * 0.1;
       scrollSpeedY = (800 / window.innerHeight) * 0.1;
+
+      this.element.addEventListener('touchmove', this.onDocumentTouchMove, false);
+      this.element.addEventListener('touchend', this.onDocumentTouchEnd, false);
+
+      window.removeEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
     }
-  };
+  }.bind(this);
 
   this.onDocumentTouchMove = function(event) {
-    if (isUserInteracting === true && event.touches.length > 0) {
-      lon = (onPointerDownPointerX - event.touches[0].pageX) * scrollSpeedX;
-      lat = (onPointerDownPointerY - event.touches[0].pageY) * scrollSpeedY;
-    }
-  };
+    lon = (onPointerDownPointerX - event.touches[0].pageX) * scrollSpeedX;
+    lat = (onPointerDownPointerY - event.touches[0].pageY) * scrollSpeedY;
+  }.bind(this);
 
   this.onDocumentTouchEnd = function(event) {
     isUserInteracting = false;
-  };
+
+    window.addEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
+
+    this.element.removeEventListener('touchmove', this.onDocumentTouchMove, false);
+    this.element.removeEventListener('touchend', this.onDocumentTouchEnd, false);
+  }.bind(this);
 
   var createQuaternion = function() {
 
@@ -234,25 +250,14 @@ var DeviceOrientationController = function( camera, domElement ) {
     }
   };
 
-  function bind(scope, fn) {
-    return function() {
-      fn.apply(scope, arguments);
-    };
-  };
-
   this.connect = function() {
     this.onScreenOrientationChangeEvent(); // run once on load
 
-    window.addEventListener('orientationchange', bind(this, this.onScreenOrientationChangeEvent), false);
-    window.addEventListener('deviceorientation', bind(this, this.onDeviceOrientationChangeEvent), false);
+    window.addEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
+    window.addEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
 
-    this.element.addEventListener('mousedown', bind(this, this.onDocumentMouseDown), false);
-    this.element.addEventListener('mousemove', bind(this, this.onDocumentMouseMove), false);
-    this.element.addEventListener('mouseup', bind(this, this.onDocumentMouseUp), false);
-
-    this.element.addEventListener('touchstart', bind(this, this.onDocumentTouchStart), false);
-    this.element.addEventListener('touchmove', bind(this, this.onDocumentTouchMove), false);
-    this.element.addEventListener('touchend', bind(this, this.onDocumentTouchEnd), false);
+    this.element.addEventListener('mousedown', this.onDocumentMouseDown, false);
+    this.element.addEventListener('touchstart', this.onDocumentTouchStart, false);
 
     this.freeze = false;
   };
@@ -260,16 +265,11 @@ var DeviceOrientationController = function( camera, domElement ) {
   this.disconnect = function() {
     this.freeze = true;
 
-    window.removeEventListener('orientationchange', bind(this, this.onScreenOrientationChangeEvent), false);
-    window.removeEventListener('deviceorientation', bind(this, this.onDeviceOrientationChangeEvent), false);
+    window.removeEventListener('orientationchange', this.onScreenOrientationChangeEvent, false);
+    window.removeEventListener('deviceorientation', this.onDeviceOrientationChangeEvent, false);
 
-    this.element.removeEventListener('mousedown', bind(this, this.onDocumentMouseDown), false);
-    this.element.removeEventListener('mousemove', bind(this, this.onDocumentMouseMove), false);
-    this.element.removeEventListener('mouseup', bind(this, this.onDocumentMouseUp), false);
-
-    this.element.removeEventListener('touchstart', bind(this, this.onDocumentTouchStart), false);
-    this.element.removeEventListener('touchmove', bind(this, this.onDocumentTouchMove), false);
-    this.element.removeEventListener('touchend', bind(this, this.onDocumentTouchEnd), false);
+    this.element.removeEventListener('mousedown', this.onDocumentMouseDown, false);
+    this.element.removeEventListener('touchstart', this.onDocumentTouchStart, false);
   };
 
 };
