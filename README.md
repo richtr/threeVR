@@ -25,6 +25,22 @@ Then call `connect()` to start the controller.
 
 ### API ###
 
+##### connect() #####
+
+Start the controller and register all required deviceorientation and manual interaction override event listeners
+
+Example:
+
+    controls.connect(); // start listening for device orientation changes
+    
+##### disconnect() #####
+
+Stop the controller and de-register all required deviceorientation and manual interaction override event listeners
+
+Example:
+
+    controls.disconnect(); // stop listening for device orientation changes
+
 ##### addEventListener(type, callback) #####
 
 Register an event handler when events fire in the `DeviceOrientationController` object.
