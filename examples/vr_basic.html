@@ -65,9 +65,22 @@
 
         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
 
-        // Initiate our deviceorientation controllers
-        controls = new DeviceOrientationController( camera ); // uses *quaternions* by default
+        // Render three.js world
 
+        scene = new THREE.Scene();
+
+        // Choose a random number between 2 and 3
+        var id = Math.floor(Math.random() * (3 - 2 + 1)) + 2;
+
+        var cube = generateCubeMap('Park' + id + 'Small');
+        scene.add( cube );
+
+        renderer = new THREE.CSS3DRenderer();
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+
+        // Initiate our deviceorientation-based controller (with manual drag move overrides)
+        controls = new DeviceOrientationController( camera, renderer.domElement );
         controls.connect();
 
         var deviceOrientationTypeSelectorEl = document.querySelector('#controllertype');
@@ -84,20 +97,6 @@
             controls.useQuaternions = true;
           }
         };
-
-        // Render three.js world
-
-        scene = new THREE.Scene();
-
-        // Choose a random number between 2 and 3
-        var id = Math.floor(Math.random() * (3 - 2 + 1)) + 2;
-
-        var cube = generateCubeMap('Park' + id + 'Small');
-        scene.add( cube );
-
-        renderer = new THREE.CSS3DRenderer();
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
 
         window.addEventListener( 'resize', onWindowResize, false );
 

@@ -5,9 +5,10 @@
  * with manual user drag override handling
  */
 
-var DeviceOrientationController = function(object) {
+var DeviceOrientationController = function( camera, domElement ) {
 
-  this.object = object;
+  this.object = camera;
+  this.element = domElement || document;
 
   this.freeze = true;
 
@@ -245,13 +246,13 @@ var DeviceOrientationController = function(object) {
     window.addEventListener('orientationchange', bind(this, this.onScreenOrientationChangeEvent), false);
     window.addEventListener('deviceorientation', bind(this, this.onDeviceOrientationChangeEvent), false);
 
-    document.addEventListener('mousedown', bind(this, this.onDocumentMouseDown), false);
-    document.addEventListener('mousemove', bind(this, this.onDocumentMouseMove), false);
-    document.addEventListener('mouseup', bind(this, this.onDocumentMouseUp), false);
+    this.element.addEventListener('mousedown', bind(this, this.onDocumentMouseDown), false);
+    this.element.addEventListener('mousemove', bind(this, this.onDocumentMouseMove), false);
+    this.element.addEventListener('mouseup', bind(this, this.onDocumentMouseUp), false);
 
-    document.addEventListener('touchstart', bind(this, this.onDocumentTouchStart), false);
-    document.addEventListener('touchmove', bind(this, this.onDocumentTouchMove), false);
-    document.addEventListener('touchend', bind(this, this.onDocumentTouchEnd), false);
+    this.element.addEventListener('touchstart', bind(this, this.onDocumentTouchStart), false);
+    this.element.addEventListener('touchmove', bind(this, this.onDocumentTouchMove), false);
+    this.element.addEventListener('touchend', bind(this, this.onDocumentTouchEnd), false);
 
     this.freeze = false;
   };
@@ -262,13 +263,13 @@ var DeviceOrientationController = function(object) {
     window.removeEventListener('orientationchange', bind(this, this.onScreenOrientationChangeEvent), false);
     window.removeEventListener('deviceorientation', bind(this, this.onDeviceOrientationChangeEvent), false);
 
-    document.removeEventListener('mousedown', bind(this, this.onDocumentMouseDown), false);
-    document.removeEventListener('mousemove', bind(this, this.onDocumentMouseMove), false);
-    document.removeEventListener('mouseup', bind(this, this.onDocumentMouseUp), false);
+    this.element.removeEventListener('mousedown', bind(this, this.onDocumentMouseDown), false);
+    this.element.removeEventListener('mousemove', bind(this, this.onDocumentMouseMove), false);
+    this.element.removeEventListener('mouseup', bind(this, this.onDocumentMouseUp), false);
 
-    document.removeEventListener('touchstart', bind(this, this.onDocumentTouchStart), false);
-    document.removeEventListener('touchmove', bind(this, this.onDocumentTouchMove), false);
-    document.removeEventListener('touchend', bind(this, this.onDocumentTouchEnd), false);
+    this.element.removeEventListener('touchstart', bind(this, this.onDocumentTouchStart), false);
+    this.element.removeEventListener('touchmove', bind(this, this.onDocumentTouchMove), false);
+    this.element.removeEventListener('touchend', bind(this, this.onDocumentTouchEnd), false);
   };
 
 };
