@@ -217,7 +217,7 @@ var DeviceOrientationController = function( object, domElement ) {
       // Apply iOS compassHeading fix
       if ( alpha !== compassHeading ) {
 
-        offsetEuler.set( 0, ( 360 - compassHeading - alpha ) % 360, 0, 'YXZ' );
+        offsetEuler.set( 0, 0, ( 360 - compassHeading - alpha ) % 360, 'YXZ' );
 
         offsetTransform.setFromEuler( offsetEuler );
 
@@ -267,7 +267,7 @@ var DeviceOrientationController = function( object, domElement ) {
       // Apply iOS compassHeading fix
       if ( alpha !== compassHeading ) {
 
-        offsetEuler.set( 0, ( 360 - compassHeading - alpha ) % 360, 0, 'YXZ' );
+        offsetEuler.set( 0, 0, ( 360 - compassHeading - alpha ) % 360, 'YXZ' );
 
         offsetTransform.identity();
 
