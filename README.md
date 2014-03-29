@@ -5,7 +5,11 @@ threeVR
 
 threeVR is a virtual reality controller that makes it easy to build device-orientation aware applications on top of the three.js library.
 
-[Live Demo](http://richtr.github.io/threeVR/examples/vr_basic.html) | [Project Background](http://dev.opera.com/articles/view/w3c-device-orientation-usage/) | [W3C Spec](http://w3c.github.io/deviceorientation/spec-source-orientation.html)
+threeVR listens for device orientation event changes and orients a three.js scene in the direction the user is facing. This library also provides manual user override controls so users can pinch to drag a scene around and pinch to zoom in on scene features. One user interaction is complete, the threeVR library snaps the scene's camera back to its default position and orientation. threeVR will also bubble events back to web applications for them to enable better UI experiences.
+
+[Live Demo](http://richtr.github.io/threeVR/examples/vr_basic.html) | [Basic Usage](#basic-usage) | [API](#api) | [License](#license)
+
+Additional materials: [Project Background](http://dev.opera.com/articles/view/w3c-device-orientation-usage/) | [W3C Spec](http://w3c.github.io/deviceorientation/spec-source-orientation.html)
 
 ### Basic Usage ###
 
