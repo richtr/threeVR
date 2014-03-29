@@ -200,18 +200,30 @@ var DeviceOrientationController = function( object, domElement ) {
     var finalQuaternion = new THREE.Quaternion();
 
     var deviceEuler = new THREE.Euler();
+    var offsetEuler = new THREE.Euler();
 
+    var offsetTransform = new THREE.Quaternion();
     var screenTransform = new THREE.Quaternion();
-
     var worldTransform = new THREE.Quaternion( -Math.sqrt(0.5), 0, 0, Math.sqrt(0.5) ); // - PI/2 around the x-axis
 
     var minusHalfAngle = 0;
 
-    return function( alpha, beta, gamma, screenOrientation ) {
+    return function( alpha, beta, gamma, compassHeading, screenOrientation ) {
 
       deviceEuler.set( beta, alpha, -gamma, 'YXZ' );
 
       finalQuaternion.setFromEuler( deviceEuler );
+
+      // Apply iOS compassHeading fix
+      if ( alpha !== compassHeading ) {
+
+        offsetEuler.set( 0, ( 360 - compassHeading - alpha ) % 360, 0, 'YXZ' );
+
+        offsetTransform.setFromEuler( offsetEuler );
+
+        finalQuaternion.multiply( offsetTransform );
+
+      }
 
       minusHalfAngle = -screenOrientation / 2;
 
@@ -234,21 +246,36 @@ var DeviceOrientationController = function( object, domElement ) {
     var finalMatrix = new THREE.Matrix4();
 
     var deviceEuler = new THREE.Euler();
+    var offsetEuler = new THREE.Euler();
     var screenEuler = new THREE.Euler();
     var worldEuler = new THREE.Euler( -Math.PI / 2, 0, 0, 'YXZ' ); // - PI/2 around the x-axis
 
+    var offsetTransform = new THREE.Matrix4();
     var screenTransform = new THREE.Matrix4();
-
     var worldTransform = new THREE.Matrix4();
+
     worldTransform.makeRotationFromEuler(worldEuler);
 
-    return function (alpha, beta, gamma, screenOrientation) {
+    return function (alpha, beta, gamma, compassHeading, screenOrientation) {
 
       deviceEuler.set( beta, alpha, -gamma, 'YXZ' );
 
       finalMatrix.identity();
 
       finalMatrix.makeRotationFromEuler( deviceEuler );
+
+      // Apply iOS compassHeading fix
+      if ( alpha !== compassHeading ) {
+
+        offsetEuler.set( 0, ( 360 - compassHeading - alpha ) % 360, 0, 'YXZ' );
+
+        offsetTransform.identity();
+
+        offsetTransform.makeRotationFromEuler( offsetEuler );
+
+        finalMatrix.multiply( offsetTransform );
+
+      }
 
       screenEuler.set( 0, -screenOrientation, 0, 'YXZ' );
 
@@ -321,7 +348,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
   this.updateDeviceMove = function() {
 
-    var alpha, beta, gamma, orient;
+    var alpha, beta, gamma, compass, orient;
 
     var objQuat; // when we use quaternions
 
@@ -331,21 +358,30 @@ var DeviceOrientationController = function( object, domElement ) {
 
       if ( this.freeze ) return;
 
-      alpha  = THREE.Math.degToRad( this.deviceOrientation.alpha || 0 ); // Z
-      beta   = THREE.Math.degToRad( this.deviceOrientation.beta  || 0 ); // X'
-      gamma  = THREE.Math.degToRad( this.deviceOrientation.gamma || 0 ); // Y''
-      orient = THREE.Math.degToRad( this.screenOrientation       || 0 ); // O
+      alpha   = THREE.Math.degToRad( this.deviceOrientation.alpha || 0 ); // Z
+      beta    = THREE.Math.degToRad( this.deviceOrientation.beta  || 0 ); // X'
+      gamma   = THREE.Math.degToRad( this.deviceOrientation.gamma || 0 ); // Y''
+
+      // iOS compass heading fix
+      if( this.deviceOrientation.webkitCompassAccuracy
+            && this.deviceOrientation.webkitCompassAccuracy !== -1 ) {
+        compass = THREE.Math.degToRad( this.deviceOrientation.webkitCompassHeading );
+      } else {
+        compass = alpha;
+      }
+
+      orient  = THREE.Math.degToRad( this.screenOrientation || 0 ); // O
 
       if ( this.useQuaternions ) {
 
-        objQuat = createQuaternion( alpha, beta, gamma, orient );
+        objQuat = createQuaternion( alpha, beta, gamma, compass, orient );
 
         //this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
         this.object.quaternion.copy( objQuat ); // no smoothing
 
       } else {
 
-        objMatrix = createRotationMatrix( alpha, beta, gamma, orient );
+        objMatrix = createRotationMatrix( alpha, beta, gamma, compass, orient );
 
         this.object.quaternion.setFromRotationMatrix( objMatrix );
 
