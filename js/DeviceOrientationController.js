@@ -336,18 +336,23 @@ var DeviceOrientationController = function( object, domElement ) {
       gamma  = THREE.Math.degToRad( this.deviceOrientation.gamma || 0 ); // Y''
       orient = THREE.Math.degToRad( this.screenOrientation       || 0 ); // O
 
-      if ( this.useQuaternions ) {
+      // only process non-zero 3-axis data
+      if( alpha !== 0 && beta !== 0 && gamma !== 0) {
 
-        objQuat = createQuaternion( alpha, beta, gamma, orient );
+        if ( this.useQuaternions ) {
 
-        //this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
-        this.object.quaternion.copy( objQuat ); // no smoothing
+          objQuat = createQuaternion( alpha, beta, gamma, orient );
 
-      } else {
+          //this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
+          this.object.quaternion.copy( objQuat ); // no smoothing
 
-        objMatrix = createRotationMatrix( alpha, beta, gamma, orient );
+        } else {
 
-        this.object.quaternion.setFromRotationMatrix( objMatrix );
+          objMatrix = createRotationMatrix( alpha, beta, gamma, orient );
+
+          this.object.quaternion.setFromRotationMatrix( objMatrix );
+
+        }
 
       }
 
