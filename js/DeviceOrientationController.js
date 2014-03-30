@@ -73,7 +73,9 @@ var DeviceOrientationController = function( object, domElement ) {
     fireEvent( CONTROLLER_EVENT.SCREEN_ORIENTATION );
   }.bind( this );
 
-  this.onCompassNeedsCalibration = function () {
+  this.onCompassNeedsCalibration = function ( event ) {
+    event.preventDefault();
+
     fireEvent( CONTROLLER_EVENT.CALIBRATE_COMPASS );
   }.bind( this );
 
