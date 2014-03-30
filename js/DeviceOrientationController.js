@@ -126,7 +126,7 @@ var DeviceOrientationController = function( object, domElement ) {
         tmpQuat.copy( this.object.quaternion );
 
         startX = currentX = event.touches[ 0 ].pageX;
-        startY = currentY = event.touches[ 0 ].pageY;
+        startY = currentY = - event.touches[ 0 ].pageY;
 
         // Set consistent scroll speed based on current viewport width/height
         scrollSpeedX = ( 1200 / window.innerWidth ) * 0.1;
@@ -164,7 +164,7 @@ var DeviceOrientationController = function( object, domElement ) {
     switch( event.touches.length ) {
       case 1:
         currentX = event.touches[ 0 ].pageX;
-        currentY = event.touches[ 0 ].pageY;
+        currentY = - event.touches[ 0 ].pageY;
         break;
 
       case 2:
