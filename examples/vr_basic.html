@@ -6,11 +6,16 @@
     <title>
       deviceorientation - quaternion &amp; rotation matrix manipulation - w/ three.js
     </title>
+
+    <script src="./lib/Avgrund/avgrund.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="./lib/Avgrund/avgrund.css">
+
     <style type="text/css">
       body {
         background-color: #000000;
         margin: 0;
         overflow: hidden;
+        font-family: Arial, Helvetica, sans-serif;
       }
 
       #extra {
@@ -44,13 +49,35 @@
         color: #000;
         border: 1px solid #999;
       }
+
+      #calibrate-compass-popup .figure8 {
+        font-family: Verdana;
+        font-size: 120px;
+        margin: -50px 0 -30px 0;
+        padding:  0;
+        text-align: center;
+      }
     </style>
+
+    <script>
+      function closeDialog() {
+        Avgrund.hide();
+      }
+    </script>
   </head>
   <body>
     <script src="./lib/three.min.js" type="text/javascript"></script>
     <script src="./lib/CSS3DRenderer.js" type="text/javascript"></script>
 
     <script src="../js/DeviceOrientationController.js" type="text/javascript"></script>
+
+    <aside id="calibrate-compass-popup" class="avgrund-popup">
+      <p>
+        <strong>Calibrate your compass</strong> by moving your device in a figure 8 motion as shown below.
+      </p>
+      <p class="figure8">&infin;</p>
+      <button onclick="javascript:closeDialog()">Continue</button>
+    </aside>
 
     <div id="extra">
       DeviceOrientation Control: <a id="controllertype" href="#" name="controllertype">Quaternions</a>
@@ -90,9 +117,9 @@
           renderer.domElement.style.cursor = 'default';
         });
 
-        // TODO: Implement a compass calibration UI when required by the device
+        // USe Avgrund.js for show a 'canvas calibration required' modal dialog
         controls.addEventListener('compassneedscalibration', function() {
-          alert('Your compass needs calibrating. Wave your phone in a figure 8 motion then continue.');
+          Avgrund.show( "#calibrate-compass-popup" );
         });
 
         // Allow rotation matrix to quaternion switching for this demo
