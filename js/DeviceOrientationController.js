@@ -270,12 +270,16 @@ var DeviceOrientationController = function( object, domElement ) {
 
   this.updateManualMove = function () {
 
+    var up  = new THREE.Vector3( 0, 0, -1 );
+
+    var eye = new THREE.Vector3();
+
     var rotation = new THREE.Euler( 0, 0, 0, 'YXZ' );
 
     var rotQuat = new THREE.Quaternion();
     var objQuat = new THREE.Quaternion();
 
-    var lat, lon;
+    var phi, theta;
 
     var zoomFactor, minZoomFactor = 1; // maxZoomFactor = Infinity
 
@@ -283,21 +287,18 @@ var DeviceOrientationController = function( object, domElement ) {
 
       if ( appState === CONTROLLER_STATE.MANUAL_ROTATE ) {
 
-        lat = (startY - currentY) * scrollSpeedY;
-        lon = (startX - currentX) * scrollSpeedX;
+        phi   = THREE.Math.degToRad( ( startY - currentY ) * scrollSpeedY );
+        theta = THREE.Math.degToRad( ( startX - currentX ) * scrollSpeedX );
 
-        rotation.set(
-          THREE.Math.degToRad(lat),
-          THREE.Math.degToRad(lon),
-          0
-        );
+        // Calculate this.object 'facing' vector
+        eye.copy( up );
+        eye.applyQuaternion( tmpQuat );
 
-        rotQuat.setFromEuler(rotation);
+        // Apply manual rotation to 'facing' vector
+        rotation.set( phi, theta, 0 );
+        eye.applyEuler( rotation );
 
-        objQuat.multiplyQuaternions(tmpQuat, rotQuat);
-
-        //this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
-        this.object.quaternion.copy( objQuat ); // no smoothing
+        this.object.lookAt( eye );
 
       } else if ( appState === CONTROLLER_STATE.MANUAL_ZOOM ) {
 
