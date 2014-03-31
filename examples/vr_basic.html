@@ -80,7 +80,8 @@
     </aside>
 
     <div id="extra">
-      DeviceOrientation Control: <a id="controllertype" href="#" name="controllertype">Quaternions</a>
+      <span id="controllername">DeviceOrientation Control:</span>
+      <a id="controllertype" href="#" name="controllertype">Quaternions</a>
     </div>
 
     <script type="text/javascript">
@@ -109,12 +110,34 @@
         controls = new DeviceOrientationController( camera, renderer.domElement );
         controls.connect();
 
+        var controllerEl = document.querySelector('#controllername');
+        var controllerDefaultText = controllerEl.textContent;
+        var controllerSelectorEl = document.querySelector('#controllertype');
+
         // Show some e.g. visual effects when the user interacts with the VR viewer
         controls.addEventListener('userinteractionstart', function() {
           renderer.domElement.style.cursor = 'move';
+          controllerSelectorEl.style.display = 'none';
         });
         controls.addEventListener('userinteractionend', function() {
           renderer.domElement.style.cursor = 'default';
+          controllerSelectorEl.style.display = 'inline-block';
+        });
+
+        controls.addEventListener('rotatestart', function() {
+          controllerEl.innerText = 'Manual Rotate';
+        });
+        controls.addEventListener('rotateend', function() {
+          var nameEl = document.querySelector('#controllername');
+          controllerEl.innerText = controllerDefaultText;
+        });
+
+        controls.addEventListener('zoomstart', function() {
+          controllerEl.innerText = 'Manual Zoom';
+        });
+        controls.addEventListener('zoomend', function() {
+          var nameEl = document.querySelector('#controllername');
+          controllerEl.innerText = controllerDefaultText;
         });
 
         // USe Avgrund.js for show a 'canvas calibration required' modal dialog
