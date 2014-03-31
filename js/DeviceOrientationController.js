@@ -54,6 +54,14 @@ var DeviceOrientationController = function( object, domElement ) {
 		ROTATE_CONTROL:     'rotate',          // rotatestart, rotateend
 	};
 
+	var startFOV = this.object.fov;
+	var startHeight = window.innerHeight;
+
+	// Ensure objects remain fixed size during viewport resizing/rotations
+	window.addEventListener( 'resize', function() {
+		this.object.fov = startFOV * ( window.innerHeight / startHeight );
+	}.bind(this), false );
+
 	var fireEvent = function () {
 		var eventData;
 
