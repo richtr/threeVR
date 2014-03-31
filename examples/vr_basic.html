@@ -6,10 +6,6 @@
     <title>
       deviceorientation - quaternion &amp; rotation matrix manipulation - w/ three.js
     </title>
-
-    <script src="./lib/Avgrund/avgrund.js" type="text/javascript"></script>
-    <link rel="stylesheet" href="./lib/Avgrund/avgrund.css">
-
     <style type="text/css">
       body {
         background-color: #000000;
@@ -57,13 +53,38 @@
         padding:  0;
         text-align: center;
       }
-    </style>
 
-    <script>
-      function closeDialog() {
-        Avgrund.hide();
+      /* Simple popup style */
+
+      .popup {
+      	position: absolute;
+      	width: 340px;
+      	height: 180px;
+      	left: 50%;
+      	top: 50%;
+      	margin: -130px 0 0 -190px;
+      	visibility: hidden;
+      	/*opacity: 0;*/
+      	z-index: 3;
+      	padding: 20px;
+
+      	background: white;
+      	box-shadow: 0px 0px 20px rgba( 0, 0, 0, 0.6 );
+      	border-radius: 3px;
       }
-    </script>
+
+      .popup button {
+      	border: 0px;
+      	padding: 8px 10px;
+      	margin: 5px 0px;
+      	border-radius: 1px;
+
+      	cursor: pointer;
+      	color: #fff;
+      	background: #333;
+      	font-size: 15px;
+      }
+    </style>
   </head>
   <body>
     <script src="./lib/three.min.js" type="text/javascript"></script>
@@ -71,12 +92,12 @@
 
     <script src="../js/DeviceOrientationController.js" type="text/javascript"></script>
 
-    <aside id="calibrate-compass-popup" class="avgrund-popup">
+    <aside id="calibrate-compass-popup" class="popup">
       <p>
         <strong>Calibrate your compass</strong> by moving your device in a figure 8 motion as shown below.
       </p>
       <p class="figure8">&infin;</p>
-      <button onclick="javascript:closeDialog()">Continue</button>
+      <button>Continue</button>
     </aside>
 
     <div id="extra">
@@ -88,6 +109,7 @@
 
       var camera, scene, renderer, controls;
 
+      // Setup
       function init() {
 
         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
@@ -96,7 +118,7 @@
 
         scene = new THREE.Scene();
 
-        // Choose a random integer from 2 to 3
+        // Choose a random cuebmap ('2' or '3')
         var id = Math.floor(Math.random() * (3 - 2 + 1)) + 2;
 
         var cube = generateCubeMap('Park' + id + 'Small');
@@ -106,9 +128,29 @@
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
 
-        // Initiate our deviceorientation-based controller (with manual drag move overrides)
+        // Add DeviceOrientation Controls
         controls = new DeviceOrientationController( camera, renderer.domElement );
         controls.connect();
+
+        setupControllerEventHandlers( controls );
+
+        window.addEventListener( 'resize', onWindowResize, false );
+
+      }
+
+      // Render loop
+      function animate() {
+
+        controls.update();
+
+        renderer.render( scene, camera );
+
+        requestAnimationFrame( animate );
+
+      }
+
+      // Demonstration of some DeviceOrientationController event handling
+      function setupControllerEventHandlers( controls ) {
 
         var controllerEl = document.querySelector('#controllername');
         var controllerDefaultText = controllerEl.textContent;
@@ -140,28 +182,33 @@
           controllerEl.innerText = controllerDefaultText;
         });
 
-        // USe Avgrund.js for show a 'canvas calibration required' modal dialog
+        // Show a simple 'canvas calibration required' modal dialog
         controls.addEventListener('compassneedscalibration', function() {
-          Avgrund.show( "#calibrate-compass-popup" );
+          var compassCalibrationPopupEl = document.querySelector('#calibrate-compass-popup');
+
+          compassCalibrationPopupEl.style.visibility = 'visible';
+
+          var compassCalibratedEl = compassCalibrationPopupEl.querySelector('button');
+
+          compassCalibratedEl.addEventListener('click', function() {
+
+            compassCalibrationPopupEl.style.visibility = 'hidden';
+
+          });
         });
 
-        // Allow rotation matrix to quaternion switching for this demo
-        var switchDeviceModelEl = document.querySelector('#controllertype');
-
-        switchDeviceModelEl.addEventListener('click', function( event ) {
+        // Allow advanced switching between 'Quaternions' and 'Rotation Matrix' calculations
+        controllerSelectorEl.addEventListener('click', function( event ) {
           event.preventDefault();
 
           if( controls.useQuaternions === true ) {
-            switchDeviceModelEl.textContent = 'Rotation Matrix';
+            controllerSelectorEl.textContent = 'Rotation Matrix';
             controls.useQuaternions = false;
           } else {
-            switchDeviceModelEl.textContent = 'Quaternions';
+            controllerSelectorEl.textContent = 'Quaternions';
             controls.useQuaternions = true;
           }
         }, false);
-
-        window.addEventListener( 'resize', onWindowResize, false );
-
       }
 
       function generateCubeMap( folderName ) {
@@ -227,16 +274,6 @@
         camera.updateProjectionMatrix();
 
         renderer.setSize( window.innerWidth, window.innerHeight );
-
-      }
-
-      function animate() {
-
-        controls.update();
-
-        renderer.render( scene, camera );
-
-        requestAnimationFrame( animate );
 
       }
 
