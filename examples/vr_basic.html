@@ -1,288 +1,288 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-    <title>
-      deviceorientation - quaternion &amp; rotation matrix manipulation - w/ three.js
-    </title>
-    <style type="text/css">
-      body {
-        background-color: #000000;
-        margin: 0;
-        overflow: hidden;
-        font-family: Arial, Helvetica, sans-serif;
-      }
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<title>
+			deviceorientation - quaternion &amp; rotation matrix manipulation - w/ three.js
+		</title>
+		<style type="text/css">
+			body {
+				background-color: #000000;
+				margin: 0;
+				overflow: hidden;
+				font-family: Arial, Helvetica, sans-serif;
+			}
 
-      #extra {
-        position: fixed;
-        width: 100%;
-        color: #ffffff;
-        padding: 5px;
-        font-family: Monospace;
-        font-size: 13px;
-        font-weight: bold;
-        text-align: center;
-        z-index: 1;
-        bottom: 3px;
-      }
+			#extra {
+				position: fixed;
+				width: 100%;
+				color: #ffffff;
+				padding: 5px;
+				font-family: Monospace;
+				font-size: 13px;
+				font-weight: bold;
+				text-align: center;
+				z-index: 1;
+				bottom: 3px;
+			}
 
-      #extra a {
-        display: inline-block;
-        padding: 2px 5px;
-        margin: 2px 5px;
-      }
+			#extra a {
+				display: inline-block;
+				padding: 2px 5px;
+				margin: 2px 5px;
+			}
 
-      #controller {
-        background-color: #fff;
-        color: #000;
-        border: 1px solid #000;
-        z-index: 2;
-      }
+			#controller {
+				background-color: #fff;
+				color: #000;
+				border: 1px solid #000;
+				z-index: 2;
+			}
 
-      #controllertype {
-        background-color: #ccc;
-        color: #000;
-        border: 1px solid #999;
-      }
+			#controllertype {
+				background-color: #ccc;
+				color: #000;
+				border: 1px solid #999;
+			}
 
-      #calibrate-compass-popup .figure8 {
-        font-family: Verdana;
-        font-size: 120px;
-        margin: -50px 0 -30px 0;
-        padding:  0;
-        text-align: center;
-      }
+			#calibrate-compass-popup .figure8 {
+				font-family: Verdana;
+				font-size: 120px;
+				margin: -50px 0 -30px 0;
+				padding:	0;
+				text-align: center;
+			}
 
-      /* Simple popup style */
+			/* Simple popup style */
 
-      .popup {
-      	position: absolute;
-      	width: 340px;
-      	height: 180px;
-      	left: 50%;
-      	top: 50%;
-      	margin: -130px 0 0 -190px;
-      	visibility: hidden;
-      	/*opacity: 0;*/
-      	z-index: 3;
-      	padding: 20px;
+			.popup {
+				position: absolute;
+				width: 340px;
+				height: 180px;
+				left: 50%;
+				top: 50%;
+				margin: -130px 0 0 -190px;
+				visibility: hidden;
+				/*opacity: 0;*/
+				z-index: 3;
+				padding: 20px;
 
-      	background: white;
-      	box-shadow: 0px 0px 20px rgba( 0, 0, 0, 0.6 );
-      	border-radius: 3px;
-      }
+				background: white;
+				box-shadow: 0px 0px 20px rgba( 0, 0, 0, 0.6 );
+				border-radius: 3px;
+			}
 
-      .popup button {
-      	border: 0px;
-      	padding: 8px 10px;
-      	margin: 5px 0px;
-      	border-radius: 1px;
+			.popup button {
+				border: 0px;
+				padding: 8px 10px;
+				margin: 5px 0px;
+				border-radius: 1px;
 
-      	cursor: pointer;
-      	color: #fff;
-      	background: #333;
-      	font-size: 15px;
-      }
-    </style>
-  </head>
-  <body>
-    <script src="./lib/three.min.js" type="text/javascript"></script>
-    <script src="./lib/CSS3DRenderer.js" type="text/javascript"></script>
+				cursor: pointer;
+				color: #fff;
+				background: #333;
+				font-size: 15px;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="./lib/three.min.js" type="text/javascript"></script>
+		<script src="./lib/CSS3DRenderer.js" type="text/javascript"></script>
 
-    <script src="../js/DeviceOrientationController.js" type="text/javascript"></script>
+		<script src="../js/DeviceOrientationController.js" type="text/javascript"></script>
 
-    <aside id="calibrate-compass-popup" class="popup">
-      <p>
-        <strong>Calibrate your compass</strong> by moving your device in a figure 8 motion as shown below.
-      </p>
-      <p class="figure8">&infin;</p>
-      <button>Continue</button>
-    </aside>
+		<aside id="calibrate-compass-popup" class="popup">
+			<p>
+				<strong>Calibrate your compass</strong> by moving your device in a figure 8 motion as shown below.
+			</p>
+			<p class="figure8">&infin;</p>
+			<button>Continue</button>
+		</aside>
 
-    <div id="extra">
-      <span id="controllername">DeviceOrientation Control:</span>
-      <a id="controllertype" href="#" name="controllertype">Quaternions</a>
-    </div>
+		<div id="extra">
+			<span id="controllername">DeviceOrientation Control:</span>
+			<a id="controllertype" href="#" name="controllertype">Quaternions</a>
+		</div>
 
-    <script type="text/javascript">
+		<script type="text/javascript">
 
-      var camera, scene, renderer, controls;
+			var camera, scene, renderer, controls;
 
-      // Setup
-      function init() {
+			// Setup
+			function init() {
 
-        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
 
-        // Render three.js world
+				// Render three.js world
 
-        scene = new THREE.Scene();
+				scene = new THREE.Scene();
 
-        // Choose a random cuebmap ('2' or '3')
-        var id = Math.floor(Math.random() * (3 - 2 + 1)) + 2;
+				// Choose a random cuebmap ('2' or '3')
+				var id = Math.floor(Math.random() * (3 - 2 + 1)) + 2;
 
-        var cube = generateCubeMap('Park' + id + 'Small');
-        scene.add( cube );
+				var cube = generateCubeMap('Park' + id + 'Small');
+				scene.add( cube );
 
-        renderer = new THREE.CSS3DRenderer();
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
+				renderer = new THREE.CSS3DRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
 
-        // Add DeviceOrientation Controls
-        controls = new DeviceOrientationController( camera, renderer.domElement );
-        controls.connect();
+				// Add DeviceOrientation Controls
+				controls = new DeviceOrientationController( camera, renderer.domElement );
+				controls.connect();
 
-        setupControllerEventHandlers( controls );
+				setupControllerEventHandlers( controls );
 
-        window.addEventListener( 'resize', onWindowResize, false );
+				window.addEventListener( 'resize', onWindowResize, false );
 
-      }
+			}
 
-      // Render loop
-      function animate() {
+			// Render loop
+			function animate() {
 
-        controls.update();
+				controls.update();
 
-        renderer.render( scene, camera );
+				renderer.render( scene, camera );
 
-        requestAnimationFrame( animate );
+				requestAnimationFrame( animate );
 
-      }
+			}
 
-      // Demonstration of some DeviceOrientationController event handling
-      function setupControllerEventHandlers( controls ) {
+			// Demonstration of some DeviceOrientationController event handling
+			function setupControllerEventHandlers( controls ) {
 
-        var controllerEl = document.querySelector('#controllername');
-        var controllerDefaultText = controllerEl.textContent;
-        var controllerSelectorEl = document.querySelector('#controllertype');
+				var controllerEl = document.querySelector('#controllername');
+				var controllerDefaultText = controllerEl.textContent;
+				var controllerSelectorEl = document.querySelector('#controllertype');
 
-        // Show some e.g. visual effects when the user interacts with the VR viewer
-        controls.addEventListener('userinteractionstart', function() {
-          renderer.domElement.style.cursor = 'move';
-          controllerSelectorEl.style.display = 'none';
-        });
-        controls.addEventListener('userinteractionend', function() {
-          renderer.domElement.style.cursor = 'default';
-          controllerSelectorEl.style.display = 'inline-block';
-        });
+				// Show some e.g. visual effects when the user interacts with the VR viewer
+				controls.addEventListener('userinteractionstart', function() {
+					renderer.domElement.style.cursor = 'move';
+					controllerSelectorEl.style.display = 'none';
+				});
+				controls.addEventListener('userinteractionend', function() {
+					renderer.domElement.style.cursor = 'default';
+					controllerSelectorEl.style.display = 'inline-block';
+				});
 
-        controls.addEventListener('rotatestart', function() {
-          controllerEl.innerText = 'Manual Rotate';
-        });
-        controls.addEventListener('rotateend', function() {
-          var nameEl = document.querySelector('#controllername');
-          controllerEl.innerText = controllerDefaultText;
-        });
+				controls.addEventListener('rotatestart', function() {
+					controllerEl.innerText = 'Manual Rotate';
+				});
+				controls.addEventListener('rotateend', function() {
+					var nameEl = document.querySelector('#controllername');
+					controllerEl.innerText = controllerDefaultText;
+				});
 
-        controls.addEventListener('zoomstart', function() {
-          controllerEl.innerText = 'Manual Zoom';
-        });
-        controls.addEventListener('zoomend', function() {
-          var nameEl = document.querySelector('#controllername');
-          controllerEl.innerText = controllerDefaultText;
-        });
+				controls.addEventListener('zoomstart', function() {
+					controllerEl.innerText = 'Manual Zoom';
+				});
+				controls.addEventListener('zoomend', function() {
+					var nameEl = document.querySelector('#controllername');
+					controllerEl.innerText = controllerDefaultText;
+				});
 
-        // Show a simple 'canvas calibration required' modal dialog
-        controls.addEventListener('compassneedscalibration', function() {
-          var compassCalibrationPopupEl = document.querySelector('#calibrate-compass-popup');
+				// Show a simple 'canvas calibration required' modal dialog
+				controls.addEventListener('compassneedscalibration', function() {
+					var compassCalibrationPopupEl = document.querySelector('#calibrate-compass-popup');
 
-          compassCalibrationPopupEl.style.visibility = 'visible';
+					compassCalibrationPopupEl.style.visibility = 'visible';
 
-          var compassCalibratedEl = compassCalibrationPopupEl.querySelector('button');
+					var compassCalibratedEl = compassCalibrationPopupEl.querySelector('button');
 
-          compassCalibratedEl.addEventListener('click', function() {
+					compassCalibratedEl.addEventListener('click', function() {
 
-            compassCalibrationPopupEl.style.visibility = 'hidden';
+						compassCalibrationPopupEl.style.visibility = 'hidden';
 
-          });
-        });
+					});
+				});
 
-        // Allow advanced switching between 'Quaternions' and 'Rotation Matrix' calculations
-        controllerSelectorEl.addEventListener('click', function( event ) {
-          event.preventDefault();
+				// Allow advanced switching between 'Quaternions' and 'Rotation Matrix' calculations
+				controllerSelectorEl.addEventListener('click', function( event ) {
+					event.preventDefault();
 
-          if( controls.useQuaternions === true ) {
-            controllerSelectorEl.textContent = 'Rotation Matrix';
-            controls.useQuaternions = false;
-          } else {
-            controllerSelectorEl.textContent = 'Quaternions';
-            controls.useQuaternions = true;
-          }
-        }, false);
-      }
+					if( controls.useQuaternions === true ) {
+						controllerSelectorEl.textContent = 'Rotation Matrix';
+						controls.useQuaternions = false;
+					} else {
+						controllerSelectorEl.textContent = 'Quaternions';
+						controls.useQuaternions = true;
+					}
+				}, false);
+			}
 
-      function generateCubeMap( folderName ) {
+			function generateCubeMap( folderName ) {
 
-        var sides = [
-          {
-            url: './textures/cube/' + folderName + '/posx.jpg',
-            position: [ -512, 0, 0 ],
-            rotation: [ 0, Math.PI / 2, 0 ]
-          },
-          {
-            url: './textures/cube/' + folderName + '/negx.jpg',
-            position: [ 512, 0, 0 ],
-            rotation: [ 0, -Math.PI / 2, 0 ]
-          },
-          {
-            url: './textures/cube/' + folderName + '/posy.jpg',
-            position: [ 0,  512, 0 ],
-            rotation: [ Math.PI / 2, 0, Math.PI ]
-          },
-          {
-            url: './textures/cube/' + folderName + '/negy.jpg',
-            position: [ 0, -512, 0 ],
-            rotation: [ - Math.PI / 2, 0, Math.PI ]
-          },
-          {
-            url: './textures/cube/' + folderName + '/posz.jpg',
-            position: [ 0, 0,  512 ],
-            rotation: [ 0, Math.PI, 0 ]
-          },
-          {
-            url: './textures/cube/' + folderName + '/negz.jpg',
-            position: [ 0, 0, -512 ],
-            rotation: [ 0, 0, 0 ]
-          }
-        ];
+				var sides = [
+					{
+						url: './textures/cube/' + folderName + '/posx.jpg',
+						position: [ -512, 0, 0 ],
+						rotation: [ 0, Math.PI / 2, 0 ]
+					},
+					{
+						url: './textures/cube/' + folderName + '/negx.jpg',
+						position: [ 512, 0, 0 ],
+						rotation: [ 0, -Math.PI / 2, 0 ]
+					},
+					{
+						url: './textures/cube/' + folderName + '/posy.jpg',
+						position: [ 0,	512, 0 ],
+						rotation: [ Math.PI / 2, 0, Math.PI ]
+					},
+					{
+						url: './textures/cube/' + folderName + '/negy.jpg',
+						position: [ 0, -512, 0 ],
+						rotation: [ - Math.PI / 2, 0, Math.PI ]
+					},
+					{
+						url: './textures/cube/' + folderName + '/posz.jpg',
+						position: [ 0, 0,	512 ],
+						rotation: [ 0, Math.PI, 0 ]
+					},
+					{
+						url: './textures/cube/' + folderName + '/negz.jpg',
+						position: [ 0, 0, -512 ],
+						rotation: [ 0, 0, 0 ]
+					}
+				];
 
-        var cube = new THREE.Object3D();
+				var cube = new THREE.Object3D();
 
-        for ( var i = 0; i < sides.length; i ++ ) {
+				for ( var i = 0; i < sides.length; i ++ ) {
 
-          var side = sides[ i ];
+					var side = sides[ i ];
 
-          var element = document.createElement( 'img' );
-          element.width = 1026; // 2 pixels extra to close the gap.
-          element.src = side.url;
+					var element = document.createElement( 'img' );
+					element.width = 1026; // 2 pixels extra to close the gap.
+					element.src = side.url;
 
-          var object = new THREE.CSS3DObject( element );
-          object.position.fromArray( side.position );
-          object.rotation.fromArray( side.rotation );
-          cube.add( object );
+					var object = new THREE.CSS3DObject( element );
+					object.position.fromArray( side.position );
+					object.rotation.fromArray( side.rotation );
+					cube.add( object );
 
-        }
+				}
 
-        return cube;
+				return cube;
 
-      }
+			}
 
-      function onWindowResize() {
+			function onWindowResize() {
 
-        camera.aspect = window.innerWidth / window.innerHeight;
+				camera.aspect = window.innerWidth / window.innerHeight;
 
-        camera.updateProjectionMatrix();
+				camera.updateProjectionMatrix();
 
-        renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setSize( window.innerWidth, window.innerHeight );
 
-      }
+			}
 
-      init();
-      animate();
+			init();
+			animate();
 
-    </script>
+		</script>
 
-    <!-- Github Banner -->
-    <a href="https://github.com/richtr/threeVR"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
-  </body>
+		<!-- Github Banner -->
+		<a href="https://github.com/richtr/threeVR"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+	</body>
 </html>
