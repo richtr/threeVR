@@ -275,9 +275,6 @@ var DeviceOrientationController = function( object, domElement ) {
     var lat, lon;
     var phi, theta;
 
-    var up  = new THREE.Vector3( 0, 0, -1 );
-    var eye = new THREE.Vector3();
-
     var rotation = new THREE.Euler( 0, 0, 0, 'YXZ' );
 
     var rotQuat = new THREE.Quaternion();
@@ -301,10 +298,20 @@ var DeviceOrientationController = function( object, domElement ) {
 
         objQuat.multiplyQuaternions( tmpQuat, rotQuat );
 
-        eye.copy( up );
-        eye.applyQuaternion( objQuat );
+        // Apply z-axis offset fix so model is always facing up vector on e.g. Desktop computers
+        if( !this.deviceOrientation.alpha || !this.deviceOrientation.beta || !this.deviceOrientation.gamma ) {
 
-        this.object.lookAt( eye );
+          rotation.setFromQuaternion( objQuat, 'YXZ' );
+
+          rotation.set( 0, 0, -rotation.z, 'YXZ' );
+
+          rotQuat.setFromEuler( rotation );
+
+          objQuat.multiply( rotQuat );
+
+        }
+
+        this.object.quaternion = objQuat;
 
       } else if ( appState === CONTROLLER_STATE.MANUAL_ZOOM ) {
 
