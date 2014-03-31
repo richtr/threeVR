@@ -139,6 +139,7 @@ var DeviceOrientationController = function( object, domElement ) {
         this.element.addEventListener( 'touchmove', this.onDocumentTouchMove, false );
         this.element.addEventListener( 'touchend', this.onDocumentTouchEnd, false );
 
+        fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'start' );
         fireEvent( CONTROLLER_EVENT.ROTATE_CONTROL + 'start' );
 
         break;
@@ -158,6 +159,7 @@ var DeviceOrientationController = function( object, domElement ) {
         this.element.addEventListener( 'touchmove', this.onDocumentTouchMove, false );
         this.element.addEventListener( 'touchend', this.onDocumentTouchEnd, false );
 
+        fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'start' );
         fireEvent( CONTROLLER_EVENT.ZOOM_CONTROL + 'start' );
 
         break;
@@ -186,6 +188,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
       appState = CONTROLLER_STATE.AUTO; // reset control state
 
+      fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'end' );
       fireEvent( CONTROLLER_EVENT.ROTATE_CONTROL + 'end' );
 
     } else if ( appState === CONTROLLER_STATE.MANUAL_ZOOM ) {
@@ -194,6 +197,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
       appState = CONTROLLER_STATE.AUTO; // reset control state
 
+      fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'end' );
       fireEvent( CONTROLLER_EVENT.ZOOM_CONTROL + 'end' );
 
     }
