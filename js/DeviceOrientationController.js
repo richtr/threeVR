@@ -99,6 +99,7 @@ var DeviceOrientationController = function( object, domElement ) {
     this.element.addEventListener( 'mouseup', this.onDocumentMouseUp, false );
 
     fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'start' );
+    fireEvent( CONTROLLER_EVENT.ROTATE_CONTROL + 'start' );
   }.bind( this );
 
   this.onDocumentMouseMove = function ( event ) {
@@ -113,6 +114,7 @@ var DeviceOrientationController = function( object, domElement ) {
     appState = CONTROLLER_STATE.AUTO;
 
     fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'end' );
+    fireEvent( CONTROLLER_EVENT.ROTATE_CONTROL + 'end' );
   }.bind( this );
 
   this.onDocumentTouchStart = function ( event ) {
