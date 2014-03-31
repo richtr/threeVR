@@ -28,26 +28,30 @@ var DeviceOrientationController = function( object, domElement ) {
 
 	// Manual rotate override components
 	var startX = 0, startY = 0,
-			currentX = 0, currentY = 0,
-			scrollSpeedX, scrollSpeedY,
-			tmpQuat = new THREE.Quaternion();
+	    currentX = 0, currentY = 0,
+	    scrollSpeedX, scrollSpeedY,
+	    tmpQuat = new THREE.Quaternion();
 
 	// Manual zoom override components
 	var zoomStart = 1, zoomCurrent = 1,
-			zoomP1 = new THREE.Vector2(),
-			zoomP2 = new THREE.Vector2(),
-			tmpFOV;
+	    zoomP1 = new THREE.Vector2(),
+	    zoomP2 = new THREE.Vector2(),
+	    tmpFOV;
 
-	var CONTROLLER_STATE = { AUTO: 0, MANUAL_ROTATE: 1, MANUAL_ZOOM: 2 };
+	var CONTROLLER_STATE = {
+		AUTO: 0,
+		MANUAL_ROTATE: 1,
+		MANUAL_ZOOM: 2
+	};
 
 	var appState = CONTROLLER_STATE.AUTO;
 
 	var CONTROLLER_EVENT = {
-		CALIBRATE_COMPASS:	'compassneedscalibration',
+		CALIBRATE_COMPASS:  'compassneedscalibration',
 		SCREEN_ORIENTATION: 'orientationchange',
-		MANUAL_CONTROL:		 'userinteraction', // userinteractionstart, userinteractionend
-		ZOOM_CONTROL:			 'zoom',						// zoomstart, zoomend
-		ROTATE_CONTROL:		 'rotate',					// rotatestart, rotateend
+		MANUAL_CONTROL:     'userinteraction', // userinteractionstart, userinteractionend
+		ZOOM_CONTROL:       'zoom',            // zoomstart, zoomend
+		ROTATE_CONTROL:     'rotate',          // rotatestart, rotateend
 	};
 
 	var fireEvent = function () {
@@ -211,17 +215,17 @@ var DeviceOrientationController = function( object, domElement ) {
 
 		var screenTransform = new THREE.Quaternion();
 
-		var worldTransform = new THREE.Quaternion( -Math.sqrt(0.5), 0, 0, Math.sqrt(0.5) ); // - PI/2 around the x-axis
+		var worldTransform = new THREE.Quaternion( - Math.sqrt(0.5), 0, 0, Math.sqrt(0.5) ); // - PI/2 around the x-axis
 
 		var minusHalfAngle = 0;
 
 		return function( alpha, beta, gamma, screenOrientation ) {
 
-			deviceEuler.set( beta, alpha, -gamma, 'YXZ' );
+			deviceEuler.set( beta, alpha, - gamma, 'YXZ' );
 
 			finalQuaternion.setFromEuler( deviceEuler );
 
-			minusHalfAngle = -screenOrientation / 2;
+			minusHalfAngle = - screenOrientation / 2;
 
 			screenTransform.set( 0, 0, Math.sin( minusHalfAngle ), Math.cos( minusHalfAngle ) );
 
@@ -243,7 +247,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
 		var deviceEuler = new THREE.Euler();
 		var screenEuler = new THREE.Euler();
-		var worldEuler = new THREE.Euler( -Math.PI / 2, 0, 0, 'YXZ' ); // - PI/2 around the x-axis
+		var worldEuler = new THREE.Euler( - Math.PI / 2, 0, 0, 'YXZ' ); // - PI/2 around the x-axis
 
 		var screenTransform = new THREE.Matrix4();
 
@@ -252,13 +256,13 @@ var DeviceOrientationController = function( object, domElement ) {
 
 		return function (alpha, beta, gamma, screenOrientation) {
 
-			deviceEuler.set( beta, alpha, -gamma, 'YXZ' );
+			deviceEuler.set( beta, alpha, - gamma, 'YXZ' );
 
 			finalMatrix.identity();
 
 			finalMatrix.makeRotationFromEuler( deviceEuler );
 
-			screenEuler.set( 0, -screenOrientation, 0, 'YXZ' );
+			screenEuler.set( 0, - screenOrientation, 0, 'YXZ' );
 
 			screenTransform.identity();
 
@@ -358,10 +362,10 @@ var DeviceOrientationController = function( object, domElement ) {
 
 			if ( this.freeze ) return;
 
-			alpha	= THREE.Math.degToRad( this.deviceOrientation.alpha || 0 ); // Z
-			beta	 = THREE.Math.degToRad( this.deviceOrientation.beta	|| 0 ); // X'
-			gamma	= THREE.Math.degToRad( this.deviceOrientation.gamma || 0 ); // Y''
-			orient = THREE.Math.degToRad( this.screenOrientation			 || 0 ); // O
+			alpha  = THREE.Math.degToRad( this.deviceOrientation.alpha || 0 ); // Z
+			beta   = THREE.Math.degToRad( this.deviceOrientation.beta  || 0 ); // X'
+			gamma  = THREE.Math.degToRad( this.deviceOrientation.gamma || 0 ); // Y''
+			orient = THREE.Math.degToRad( this.screenOrientation       || 0 ); // O
 
 			// only process non-zero 3-axis data
 			if( alpha !== 0 && beta !== 0 && gamma !== 0) {
