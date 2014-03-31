@@ -292,24 +292,31 @@ var DeviceOrientationController = function( object, domElement ) {
         phi   = THREE.Math.degToRad( lat );
         theta = THREE.Math.degToRad( lon );
 
-        rotation.set( phi, theta, 0, 'YXZ' );
+        objQuat.copy( tmpQuat );
 
-        rotQuat.setFromEuler( rotation );
+        rotQuat.set( 0, Math.sin( theta / 2 ), 0, Math.cos( theta / 2 ) );
 
-        objQuat.multiplyQuaternions( tmpQuat, rotQuat );
+        objQuat.multiply( rotQuat );
 
-        // Apply z-axis offset fix so model is always facing up vector on e.g. Desktop computers
-        if( !this.deviceOrientation.alpha || !this.deviceOrientation.beta || !this.deviceOrientation.gamma ) {
+        rotQuat.set( Math.sin( phi / 2 ), 0, 0, Math.cos( phi / 2 ) );
 
-          rotation.setFromQuaternion( objQuat, 'YXZ' );
+        objQuat.multiply( rotQuat );
 
-          rotation.set( 0, 0, -rotation.z, 'YXZ' );
+        // Remove introduced z-axis rotation
 
-          rotQuat.setFromEuler( rotation );
+        rotation.setFromQuaternion( objQuat, 'YXZ' );
 
-          objQuat.multiply( rotQuat );
+        rotQuat.set( 0, 0, Math.sin( - rotation.z / 2 ), Math.cos( - rotation.z / 2 ) );
 
-        }
+        objQuat.multiply( rotQuat );
+
+        // Re-add original z-axis rotation
+
+        rotation.setFromQuaternion( tmpQuat, 'YXZ' );
+
+        rotQuat.set( 0, 0, Math.sin( rotation.z / 2 ), Math.cos( rotation.z / 2 ) );
+
+        objQuat.multiply( rotQuat );
 
         this.object.quaternion = objQuat;
 
