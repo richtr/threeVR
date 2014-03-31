@@ -88,8 +88,8 @@ var DeviceOrientationController = function( object, domElement ) {
 
     tmpQuat.copy( this.object.quaternion );
 
-    startX = currentX = event.clientX;
-    startY = currentY = event.clientY;
+    startX = currentX = event.pageX;
+    startY = currentY = event.pageY;
 
     // Set consistent scroll speed based on current viewport width/height
     scrollSpeedX = ( 1200 / window.innerWidth ) * 0.1;
@@ -102,8 +102,8 @@ var DeviceOrientationController = function( object, domElement ) {
   }.bind( this );
 
   this.onDocumentMouseMove = function ( event ) {
-    currentX = event.clientX;
-    currentY = event.clientY;
+    currentX = event.pageX;
+    currentY = event.pageY;
   }.bind( this );
 
   this.onDocumentMouseUp = function ( event ) {
@@ -272,8 +272,10 @@ var DeviceOrientationController = function( object, domElement ) {
 
   this.updateManualMove = function () {
 
-    var up  = new THREE.Vector3( 0, 0, -1 );
+    var lat, lon;
+    var phi, theta;
 
+    var up  = new THREE.Vector3( 0, 0, -1 );
     var eye = new THREE.Vector3();
 
     var rotation = new THREE.Euler( 0, 0, 0, 'YXZ' );
@@ -281,24 +283,26 @@ var DeviceOrientationController = function( object, domElement ) {
     var rotQuat = new THREE.Quaternion();
     var objQuat = new THREE.Quaternion();
 
-    var phi, theta;
-
     var zoomFactor, minZoomFactor = 1; // maxZoomFactor = Infinity
 
     return function () {
 
       if ( appState === CONTROLLER_STATE.MANUAL_ROTATE ) {
 
-        phi   = THREE.Math.degToRad( ( startY - currentY ) * scrollSpeedY );
-        theta = THREE.Math.degToRad( ( startX - currentX ) * scrollSpeedX );
+        lat = ( startY - currentY ) * scrollSpeedY;
+        lon = ( startX - currentX ) * scrollSpeedX;
 
-        // Calculate this.object 'facing' vector
+        phi   = THREE.Math.degToRad( lat );
+        theta = THREE.Math.degToRad( lon );
+
+        rotation.set( phi, theta, 0, 'YXZ' );
+
+        rotQuat.setFromEuler( rotation );
+
+        objQuat.multiplyQuaternions( tmpQuat, rotQuat );
+
         eye.copy( up );
-        eye.applyQuaternion( tmpQuat );
-
-        // Apply manual rotation to 'facing' vector
-        rotation.set( phi, theta, 0 );
-        eye.applyEuler( rotation );
+        eye.applyQuaternion( objQuat );
 
         this.object.lookAt( eye );
 
