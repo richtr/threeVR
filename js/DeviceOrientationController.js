@@ -56,7 +56,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
 	// Consistent Object Field-Of-View fix components
 	var startClientHeight = window.innerHeight,
-	    startFOVFrustrumHeight = 2000 * Math.tan( THREE.Math.degToRad( ( camera.fov || 75 ) / 2 ) ),
+	    startFOVFrustrumHeight = 2000 * Math.tan( THREE.Math.degToRad( ( this.object.fov || 75 ) / 2 ) ),
 	    relativeFOVFrustrumHeight, relativeVerticalFOV;
 
 	var fireEvent = function () {
