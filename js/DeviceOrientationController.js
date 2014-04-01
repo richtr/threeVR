@@ -54,13 +54,10 @@ var DeviceOrientationController = function( object, domElement ) {
 		ROTATE_CONTROL:     'rotate',          // rotatestart, rotateend
 	};
 
-	var startFOV = this.object.fov;
-	var startHeight = window.innerHeight;
-
-	// Ensure objects remain fixed size during viewport resizing/rotations
-	window.addEventListener( 'resize', function() {
-		this.object.fov = startFOV * ( window.innerHeight / startHeight );
-	}.bind(this), false );
+	// Consistent Object Field-Of-View fix components
+	var startClientHeight = window.innerHeight,
+	    startFOVFrustrumHeight = 2000 * Math.tan( THREE.Math.degToRad( ( camera.fov || 75 ) / 2 ) ),
+	    relativeFOVFrustrumHeight, relativeVerticalFOV;
 
 	var fireEvent = function () {
 		var eventData;
@@ -74,6 +71,14 @@ var DeviceOrientationController = function( object, domElement ) {
 			this.dispatchEvent( eventData );
 		}.bind( this );
 	}.bind( this )();
+
+	this.constrainObjectFOV = function () {
+		relativeFOVFrustrumHeight = startFOVFrustrumHeight * ( window.innerHeight / startClientHeight );
+
+		relativeVerticalFOV = THREE.Math.radToDeg( 2 * Math.atan( relativeFOVFrustrumHeight / 2000 ) );
+
+		this.object.fov = relativeVerticalFOV;
+	}.bind( this );
 
 	this.onDeviceOrientationChange = function ( event ) {
 		this.deviceOrientation = event;
@@ -408,6 +413,8 @@ var DeviceOrientationController = function( object, domElement ) {
 	};
 
 	this.connect = function () {
+		window.addEventListener( 'resize', this.constrainObjectFOV, false );
+
 		window.addEventListener( 'orientationchange', this.onScreenOrientationChange, false );
 		window.addEventListener( 'deviceorientation', this.onDeviceOrientationChange, false );
 
@@ -421,6 +428,8 @@ var DeviceOrientationController = function( object, domElement ) {
 
 	this.disconnect = function () {
 		this.freeze = true;
+
+		window.removeEventListener( 'resize', this.constrainObjectFOV, false );
 
 		window.removeEventListener( 'orientationchange', this.onScreenOrientationChange, false );
 		window.removeEventListener( 'deviceorientation', this.onDeviceOrientationChange, false );
