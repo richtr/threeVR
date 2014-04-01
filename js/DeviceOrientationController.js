@@ -303,6 +303,8 @@ var DeviceOrientationController = function( object, domElement ) {
 		var rotQuat = new THREE.Quaternion();
 		var objQuat = new THREE.Quaternion();
 
+		var tmpZ, objZ;
+
 		var zoomFactor, minZoomFactor = 1; // maxZoomFactor = Infinity
 
 		return function () {
@@ -325,19 +327,12 @@ var DeviceOrientationController = function( object, domElement ) {
 
 				objQuat.multiply( rotQuat );
 
-				// Remove introduced z-axis rotation
+				// Remove introduced z-axis rotation and re-add original z-axis rotation
 
-				rotation.setFromQuaternion( objQuat, 'YXZ' );
+				objZ = rotation.setFromQuaternion( objQuat, 'YXZ' ).z;
+				tmpZ = rotation.setFromQuaternion( tmpQuat, 'YXZ' ).z;
 
-				rotQuat.set( 0, 0, Math.sin( - rotation.z / 2 ), Math.cos( - rotation.z / 2 ) );
-
-				objQuat.multiply( rotQuat );
-
-				// Re-add original z-axis rotation
-
-				rotation.setFromQuaternion( tmpQuat, 'YXZ' );
-
-				rotQuat.set( 0, 0, Math.sin( rotation.z / 2 ), Math.cos( rotation.z / 2 ) );
+				rotQuat.set( 0, 0, Math.sin( ( tmpZ - objZ  ) / 2 ), Math.cos( ( tmpZ - objZ ) / 2 ) );
 
 				objQuat.multiply( rotQuat );
 
