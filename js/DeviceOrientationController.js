@@ -240,13 +240,13 @@ var DeviceOrientationController = function( object, domElement ) {
 
 			minusHalfAngle = - screenOrientation / 2;
 
-			screenTransform.set( 0, 0, Math.sin( minusHalfAngle ), Math.cos( minusHalfAngle ) );
+			screenTransform.set( 0, Math.sin( minusHalfAngle ), 0, Math.cos( minusHalfAngle ) );
+
+			finalQuaternion.multiply( screenTransform );
 
 			if ( alpha !== 0 ) {
 				finalQuaternion.multiply( worldTransform );
 			}
-
-			finalQuaternion.multiply( screenTransform );
 
 			return finalQuaternion;
 
