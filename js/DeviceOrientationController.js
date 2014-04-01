@@ -59,6 +59,9 @@ var DeviceOrientationController = function( object, domElement ) {
 	    startFOVFrustrumHeight = 2000 * Math.tan( THREE.Math.degToRad( ( this.object.fov || 75 ) / 2 ) ),
 	    relativeFOVFrustrumHeight, relativeVerticalFOV;
 
+	var deviceQuat; // computed orientation when we use quaternions
+	var deviceMatrix; // computed orientation when we use rotation matrixes
+
 	var fireEvent = function () {
 		var eventData;
 
@@ -103,6 +106,8 @@ var DeviceOrientationController = function( object, domElement ) {
 
 		appState = CONTROLLER_STATE.MANUAL_ROTATE;
 
+		this.freeze = true;
+
 		tmpQuat.copy( this.object.quaternion );
 
 		startX = currentX = event.pageX;
@@ -130,6 +135,8 @@ var DeviceOrientationController = function( object, domElement ) {
 
 		appState = CONTROLLER_STATE.AUTO;
 
+		this.freeze = false;
+
 		fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'end' );
 		fireEvent( CONTROLLER_EVENT.ROTATE_CONTROL + 'end' );
 	}.bind( this );
@@ -143,6 +150,8 @@ var DeviceOrientationController = function( object, domElement ) {
 				if ( this.enableManualDrag !== true ) return;
 
 				appState = CONTROLLER_STATE.MANUAL_ROTATE;
+
+				this.freeze = true;
 
 				tmpQuat.copy( this.object.quaternion );
 
@@ -165,6 +174,8 @@ var DeviceOrientationController = function( object, domElement ) {
 				if ( this.enableManualZoom !== true ) return;
 
 				appState = CONTROLLER_STATE.MANUAL_ZOOM;
+
+				this.freeze = true;
 
 				tmpFOV = this.object.fov;
 
@@ -205,14 +216,18 @@ var DeviceOrientationController = function( object, domElement ) {
 
 			appState = CONTROLLER_STATE.AUTO; // reset control state
 
+			this.freeze = false;
+
 			fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'end' );
 			fireEvent( CONTROLLER_EVENT.ROTATE_CONTROL + 'end' );
 
 		} else if ( appState === CONTROLLER_STATE.MANUAL_ZOOM ) {
 
-			this.object.fov = tmpFOV; // re-instate original object FOV
+			this.constrainObjectFOV(); // re-instate original object FOV
 
 			appState = CONTROLLER_STATE.AUTO; // reset control state
+
+			this.freeze = false;
 
 			fireEvent( CONTROLLER_EVENT.MANUAL_CONTROL + 'end' );
 			fireEvent( CONTROLLER_EVENT.ZOOM_CONTROL + 'end' );
@@ -303,11 +318,13 @@ var DeviceOrientationController = function( object, domElement ) {
 		var rotQuat = new THREE.Quaternion();
 		var objQuat = new THREE.Quaternion();
 
-		var tmpZ, objZ;
+		var tmpZ, objZ, realZ;
 
 		var zoomFactor, minZoomFactor = 1; // maxZoomFactor = Infinity
 
 		return function () {
+
+			objQuat.copy( tmpQuat );
 
 			if ( appState === CONTROLLER_STATE.MANUAL_ROTATE ) {
 
@@ -317,8 +334,6 @@ var DeviceOrientationController = function( object, domElement ) {
 				phi	 = THREE.Math.degToRad( lat );
 				theta = THREE.Math.degToRad( lon );
 
-				objQuat.copy( tmpQuat );
-
 				rotQuat.set( 0, Math.sin( theta / 2 ), 0, Math.cos( theta / 2 ) );
 
 				objQuat.multiply( rotQuat );
@@ -327,12 +342,17 @@ var DeviceOrientationController = function( object, domElement ) {
 
 				objQuat.multiply( rotQuat );
 
-				// Remove introduced z-axis rotation and re-add original z-axis rotation
+				// Remove introduced z-axis rotation and add device's current z-axis rotation
 
-				objZ = rotation.setFromQuaternion( objQuat, 'YXZ' ).z;
-				tmpZ = rotation.setFromQuaternion( tmpQuat, 'YXZ' ).z;
+				tmpZ  = rotation.setFromQuaternion( tmpQuat, 'YXZ' ).z;
+				objZ  = rotation.setFromQuaternion( objQuat, 'YXZ' ).z;
+				realZ = rotation.setFromQuaternion( deviceQuat || tmpQuat, 'YXZ' ).z;
 
-				rotQuat.set( 0, 0, Math.sin( ( tmpZ - objZ  ) / 2 ), Math.cos( ( tmpZ - objZ ) / 2 ) );
+				rotQuat.set( 0, 0, Math.sin( ( realZ - tmpZ  ) / 2 ), Math.cos( ( realZ - tmpZ ) / 2 ) );
+
+				tmpQuat.multiply( rotQuat );
+
+				rotQuat.set( 0, 0, Math.sin( ( realZ - objZ  ) / 2 ), Math.cos( ( realZ - objZ ) / 2 ) );
 
 				objQuat.multiply( rotQuat );
 
@@ -352,6 +372,21 @@ var DeviceOrientationController = function( object, domElement ) {
 
 				}
 
+				// Add device's current z-axis rotation
+
+				if( deviceQuat ) {
+
+					tmpZ  = rotation.setFromQuaternion( tmpQuat, 'YXZ' ).z;
+					realZ = rotation.setFromQuaternion( deviceQuat, 'YXZ' ).z;
+
+					rotQuat.set( 0, 0, Math.sin( ( realZ - tmpZ ) / 2 ), Math.cos( ( realZ - tmpZ ) / 2 ) );
+
+					tmpQuat.multiply( rotQuat );
+
+					this.object.quaternion = tmpQuat;
+
+				}
+
 			}
 
 		};
@@ -362,13 +397,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
 		var alpha, beta, gamma, orient;
 
-		var objQuat; // when we use quaternions
-
-		var objMatrix; // when we use rotation matrixes
-
 		return function() {
-
-			if ( this.freeze ) return;
 
 			alpha  = THREE.Math.degToRad( this.deviceOrientation.alpha || 0 ); // Z
 			beta   = THREE.Math.degToRad( this.deviceOrientation.beta  || 0 ); // X'
@@ -380,16 +409,20 @@ var DeviceOrientationController = function( object, domElement ) {
 
 				if ( this.useQuaternions ) {
 
-					objQuat = createQuaternion( alpha, beta, gamma, orient );
+					deviceQuat = createQuaternion( alpha, beta, gamma, orient );
+
+					if ( this.freeze ) return;
 
 					//this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
-					this.object.quaternion.copy( objQuat ); // no smoothing
+					this.object.quaternion.copy( deviceQuat ); // no smoothing
 
 				} else {
 
-					objMatrix = createRotationMatrix( alpha, beta, gamma, orient );
+					deviceMatrix = createRotationMatrix( alpha, beta, gamma, orient );
 
-					this.object.quaternion.setFromRotationMatrix( objMatrix );
+					if ( this.freeze ) return;
+
+					this.object.quaternion.setFromRotationMatrix( deviceMatrix );
 
 				}
 
@@ -400,9 +433,9 @@ var DeviceOrientationController = function( object, domElement ) {
 	}();
 
 	this.update = function () {
-		if ( appState === CONTROLLER_STATE.AUTO ) {
-			this.updateDeviceMove();
-		} else {
+		this.updateDeviceMove();
+
+		if ( appState !== CONTROLLER_STATE.AUTO ) {
 			this.updateManualMove();
 		}
 	};
