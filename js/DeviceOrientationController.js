@@ -11,7 +11,7 @@
  *
 **/
 
-var DeviceOrientationController = function( object, domElement ) {
+var DeviceOrientationController = function ( object, domElement ) {
 
 	this.object = object;
 	this.element = domElement || document;
@@ -246,7 +246,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
 		var minusHalfAngle = 0;
 
-		return function( alpha, beta, gamma, screenOrientation ) {
+		return function ( alpha, beta, gamma, screenOrientation ) {
 
 			deviceEuler.set( beta, alpha, - gamma, 'YXZ' );
 
@@ -373,7 +373,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
 				// Add device's current z-axis rotation
 
-				if( deviceQuat ) {
+				if ( deviceQuat ) {
 
 					tmpZ  = rotation.setFromQuaternion( tmpQuat, 'YXZ' ).z;
 					realZ = rotation.setFromQuaternion( deviceQuat, 'YXZ' ).z;
@@ -392,13 +392,13 @@ var DeviceOrientationController = function( object, domElement ) {
 
 	}();
 
-	this.updateDeviceMove = function() {
+	this.updateDeviceMove = function () {
 
 		var alpha, beta, gamma, orient;
 
 		var deviceMatrix;
 
-		return function() {
+		return function () {
 
 			alpha  = THREE.Math.degToRad( this.deviceOrientation.alpha || 0 ); // Z
 			beta   = THREE.Math.degToRad( this.deviceOrientation.beta  || 0 ); // X'
@@ -406,7 +406,7 @@ var DeviceOrientationController = function( object, domElement ) {
 			orient = THREE.Math.degToRad( this.screenOrientation       || 0 ); // O
 
 			// only process non-zero 3-axis data
-			if( alpha !== 0 && beta !== 0 && gamma !== 0) {
+			if ( alpha !== 0 && beta !== 0 && gamma !== 0) {
 
 				if ( this.useQuaternions ) {
 
@@ -420,7 +420,7 @@ var DeviceOrientationController = function( object, domElement ) {
 
 				}
 
-				if( this.freeze ) return;
+				if ( this.freeze ) return;
 
 				//this.object.quaternion.slerp( deviceQuat, 0.07 ); // smoothing
 				this.object.quaternion = deviceQuat;
