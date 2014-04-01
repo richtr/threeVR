@@ -59,8 +59,7 @@ var DeviceOrientationController = function( object, domElement ) {
 	    startFOVFrustrumHeight = 2000 * Math.tan( THREE.Math.degToRad( ( this.object.fov || 75 ) / 2 ) ),
 	    relativeFOVFrustrumHeight, relativeVerticalFOV;
 
-	var deviceQuat; // computed orientation when we use quaternions
-	var deviceMatrix; // computed orientation when we use rotation matrixes
+	var deviceQuat;
 
 	var fireEvent = function () {
 		var eventData;
@@ -397,6 +396,8 @@ var DeviceOrientationController = function( object, domElement ) {
 
 		var alpha, beta, gamma, orient;
 
+		var deviceMatrix;
+
 		return function() {
 
 			alpha  = THREE.Math.degToRad( this.deviceOrientation.alpha || 0 ); // Z
@@ -411,20 +412,18 @@ var DeviceOrientationController = function( object, domElement ) {
 
 					deviceQuat = createQuaternion( alpha, beta, gamma, orient );
 
-					if ( this.freeze ) return;
-
-					//this.object.quaternion.slerp( objQuat, 0.07 ); // smoothing
-					this.object.quaternion.copy( deviceQuat ); // no smoothing
-
 				} else {
 
 					deviceMatrix = createRotationMatrix( alpha, beta, gamma, orient );
 
-					if ( this.freeze ) return;
-
-					this.object.quaternion.setFromRotationMatrix( deviceMatrix );
+					deviceQuat.setFromRotationMatrix( deviceMatrix );
 
 				}
+
+				if( this.freeze ) return;
+
+				//this.object.quaternion.slerp( deviceQuat, 0.07 ); // smoothing
+				this.object.quaternion = deviceQuat;
 
 			}
 
