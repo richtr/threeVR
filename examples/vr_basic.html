@@ -119,9 +119,9 @@
 				scene = new THREE.Scene();
 
 				// Choose a random cuebmap ('2' or '3')
-				var id = Math.floor(Math.random() * (3 - 2 + 1)) + 2;
+				var mapId = Math.floor( Math.random() * ( 3 - 2 + 1 ) ) + 2;
 
-				var cube = generateCubeMap('Park' + id + 'Small');
+				var cube = generateCubeMap( 'Park' + mapId + 'Small', 512 );
 				scene.add( cube );
 
 				renderer = new THREE.CSS3DRenderer();
@@ -152,45 +152,52 @@
 			// Demonstration of some DeviceOrientationController event handling
 			function setupControllerEventHandlers( controls ) {
 
-				var controllerEl = document.querySelector('#controllername');
+				var controllerEl = document.querySelector( '#controllername' );
 				var controllerDefaultText = controllerEl.textContent;
-				var controllerSelectorEl = document.querySelector('#controllertype');
+				var controllerSelectorEl = document.querySelector( '#controllertype' );
 
-				// Show some e.g. visual effects when the user interacts with the VR viewer
-				controls.addEventListener('userinteractionstart', function() {
+				var compassCalibrationPopupEl = document.querySelector( '#calibrate-compass-popup' );
+				var compassCalibratedEl = compassCalibrationPopupEl.querySelector( 'button' );
+
+				// Listen for manual interaction (zoom OR rotate)
+
+				controls.addEventListener( 'userinteractionstart', function () {
 					renderer.domElement.style.cursor = 'move';
 					controllerSelectorEl.style.display = 'none';
 				});
-				controls.addEventListener('userinteractionend', function() {
+
+				controls.addEventListener( 'userinteractionend', function () {
 					renderer.domElement.style.cursor = 'default';
 					controllerSelectorEl.style.display = 'inline-block';
 				});
 
-				controls.addEventListener('rotatestart', function() {
+				// Listen for manual rotate interaction
+
+				controls.addEventListener( 'rotatestart', function () {
 					controllerEl.innerText = 'Manual Rotate';
 				});
-				controls.addEventListener('rotateend', function() {
-					var nameEl = document.querySelector('#controllername');
+
+				controls.addEventListener( 'rotateend', function () {
 					controllerEl.innerText = controllerDefaultText;
 				});
 
-				controls.addEventListener('zoomstart', function() {
+				// Listen for manual zoom interaction
+
+				controls.addEventListener( 'zoomstart', function () {
 					controllerEl.innerText = 'Manual Zoom';
 				});
-				controls.addEventListener('zoomend', function() {
-					var nameEl = document.querySelector('#controllername');
+
+				controls.addEventListener( 'zoomend', function () {
 					controllerEl.innerText = controllerDefaultText;
 				});
 
-				// Show a simple 'canvas calibration required' modal dialog
-				controls.addEventListener('compassneedscalibration', function() {
-					var compassCalibrationPopupEl = document.querySelector('#calibrate-compass-popup');
+				//
 
+				// Show a simple 'canvas calibration required' dialog to user
+				controls.addEventListener( 'compassneedscalibration', function () {
 					compassCalibrationPopupEl.style.visibility = 'visible';
 
-					var compassCalibratedEl = compassCalibrationPopupEl.querySelector('button');
-
-					compassCalibratedEl.addEventListener('click', function() {
+					compassCalibratedEl.addEventListener( 'click', function () {
 
 						compassCalibrationPopupEl.style.visibility = 'hidden';
 
@@ -198,10 +205,10 @@
 				});
 
 				// Allow advanced switching between 'Quaternions' and 'Rotation Matrix' calculations
-				controllerSelectorEl.addEventListener('click', function( event ) {
+				controllerSelectorEl.addEventListener( 'click', function ( event ) {
 					event.preventDefault();
 
-					if( controls.useQuaternions === true ) {
+					if ( controls.useQuaternions === true ) {
 						controllerSelectorEl.textContent = 'Rotation Matrix';
 						controls.useQuaternions = false;
 					} else {
@@ -211,37 +218,42 @@
 				}, false);
 			}
 
-			function generateCubeMap( folderName ) {
+			function generateCubeMap( folderName, tileWidth ) {
+
+				var flipAngle  = Math.PI;       // 180 degrees
+				var rightAngle = flipAngle / 2; //  90 degrees
+
+				tileWidth = tileWidth || 512;
 
 				var sides = [
 					{
 						url: './textures/cube/' + folderName + '/posx.jpg',
-						position: [ -512, 0, 0 ],
-						rotation: [ 0, Math.PI / 2, 0 ]
+						position: [ - tileWidth, 0, 0 ],
+						rotation: [ 0, rightAngle, 0 ]
 					},
 					{
 						url: './textures/cube/' + folderName + '/negx.jpg',
-						position: [ 512, 0, 0 ],
-						rotation: [ 0, -Math.PI / 2, 0 ]
+						position: [ tileWidth, 0, 0 ],
+						rotation: [ 0, - rightAngle, 0 ]
 					},
 					{
 						url: './textures/cube/' + folderName + '/posy.jpg',
-						position: [ 0,	512, 0 ],
-						rotation: [ Math.PI / 2, 0, Math.PI ]
+						position: [ 0, tileWidth, 0 ],
+						rotation: [ rightAngle, 0, flipAngle ]
 					},
 					{
 						url: './textures/cube/' + folderName + '/negy.jpg',
-						position: [ 0, -512, 0 ],
-						rotation: [ - Math.PI / 2, 0, Math.PI ]
+						position: [ 0, - tileWidth, 0 ],
+						rotation: [ - rightAngle, 0, flipAngle ]
 					},
 					{
 						url: './textures/cube/' + folderName + '/posz.jpg',
-						position: [ 0, 0,	512 ],
-						rotation: [ 0, Math.PI, 0 ]
+						position: [ 0, 0, tileWidth ],
+						rotation: [ 0, flipAngle, 0 ]
 					},
 					{
 						url: './textures/cube/' + folderName + '/negz.jpg',
-						position: [ 0, 0, -512 ],
+						position: [ 0, 0, - tileWidth ],
 						rotation: [ 0, 0, 0 ]
 					}
 				];
@@ -253,7 +265,7 @@
 					var side = sides[ i ];
 
 					var element = document.createElement( 'img' );
-					element.width = 1026; // 2 pixels extra to close the gap.
+					element.width = tileWidth * 2 + 2; // 2 pixels extra to close the gap.
 					element.src = side.url;
 
 					var object = new THREE.CSS3DObject( element );
@@ -278,6 +290,7 @@
 			}
 
 			init();
+
 			animate();
 
 		</script>
