@@ -59,7 +59,7 @@ var DeviceOrientationController = function ( object, domElement ) {
 	    startFOVFrustrumHeight = 2000 * Math.tan( THREE.Math.degToRad( ( this.object.fov || 75 ) / 2 ) ),
 	    relativeFOVFrustrumHeight, relativeVerticalFOV;
 
-	var deviceQuat;
+	var deviceQuat = new THREE.Quaternion();
 
 	var fireEvent = function () {
 		var eventData;
