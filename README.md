@@ -7,13 +7,11 @@ threeVR is a virtual reality controller that makes it easy to build device-orien
 
 threeVR listens for device orientation event changes and orients a three.js scene in the direction the user is facing. This library also provides manual user override controls so users can pinch to drag a scene around and pinch to zoom in on scene features. Once user interaction is complete, the threeVR library snaps the scene's camera back to the current device orientation position. threeVR also provides a set of custom event callbacks that web applications can use to build their own compelling user interfaces.
 
-[Live Demo](http://richtr.github.io/threeVR/examples/vr_basic.html) | [Basic Usage](#basic-usage) | [API](#api) | [License](#license)
-
-Additional materials: [Project Background](http://dev.opera.com/articles/view/w3c-device-orientation-usage/) | [W3C Spec](http://w3c.github.io/deviceorientation/spec-source-orientation.html)
+[Live Demo](http://richtr.github.io/threeVR/examples/vr_basic.html) | [Basic Usage](#basic-usage) | [API](#api) | [Reference Material](#reference-material) | [License](#license)
 
 ### Basic Usage ###
 
-Add [three.js]() and [DeviceOrientationController.js](https://github.com/richtr/threeVR/blob/master/js/DeviceOrientationController.js) to your project:
+Add [three.js](https://github.com/mrdoob/three.js/) and [DeviceOrientationController.js](https://github.com/richtr/threeVR/blob/master/js/DeviceOrientationController.js) to your project:
 
     <script src="/lib/three.min.js"></script>
     <script src="/js/DeviceOrientationController.js"></script>
@@ -36,7 +34,7 @@ Start the controller and register all required deviceorientation and manual inte
 Example:
 
     controls.connect(); // start listening for device orientation changes
-    
+
 ##### disconnect() #####
 
 Stop the controller and de-register all required deviceorientation and manual interaction override event listeners
@@ -55,19 +53,19 @@ Available event types are:
 * `orientationchange` - when the screen orientation changes (e.g. the user rotates their screen from portrait to landscape or vice-versa). The current screen orientation can subsequently be read from `controls.screenOrientation`.
 - `userinteractionstart` - when the user starts manually overriding deviceorientation controls by interacting with the renderer DOM element.
 - `userinteractionend` - when the user ends manually overriding deviceorientation controls by interacting with the renderer DOM element.
-- `zoomstart` - when the user manually starts to zoom the scene in the renderer DOM element.
-- `zoomend` - when the user manually starts to zoom the scene in the renderer DOM element.
-- `rotatestart` - when the user manually starts to rotate the scene in the renderer DOM element.
-- `rotateend` - when the user manually starts to rotate the scene in the renderer DOM element.
+- `zoomstart` - when the user manually starts zooming the scene in the renderer DOM element.
+- `zoomend` - when the user manually ends zooming the scene in the renderer DOM element.
+- `rotatestart` - when the user manually starts rotating the scene in the renderer DOM element.
+- `rotateend` - when the user manually ends rotating the scene in the renderer DOM element.
 
 Example usage:
 
     controls.addEventListener('userinteractionstart', function() {
-      renderer.domElement.style.cursor = 'move';
+      controls.element.style.cursor = 'move';
     });
 
     controls.addEventListener('userinteractionend', function() {
-      renderer.domElement.style.cursor = 'normal';
+      controls.element.style.cursor = 'normal';
     });
 
 ##### removeEventListener(type, callback) #####
@@ -115,6 +113,11 @@ Default is `true`.
 Example:
 
     controls.useQuaternions = false; // use rotation matrix math
+
+### Reference Material ###
+
+* Article: [Practical application and usage of the W3C Device Orientation API](http://dev.opera.com/articles/view/w3c-device-orientation-usage/)
+* [W3C Spec](http://w3c.github.io/deviceorientation/spec-source-orientation.html)
 
 ### License ###
 
