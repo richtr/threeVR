@@ -258,9 +258,7 @@ var DeviceOrientationController = function ( object, domElement ) {
 
 			finalQuaternion.multiply( screenTransform );
 
-			if ( alpha !== 0 ) {
-				finalQuaternion.multiply( worldTransform );
-			}
+			finalQuaternion.multiply( worldTransform );
 
 			return finalQuaternion;
 
@@ -297,9 +295,7 @@ var DeviceOrientationController = function ( object, domElement ) {
 
 			finalMatrix.multiply( screenTransform );
 
-			if ( alpha !== 0 ) {
-				finalMatrix.multiply( worldTransform );
-			}
+			finalMatrix.multiply( worldTransform );
 
 			return finalMatrix;
 
