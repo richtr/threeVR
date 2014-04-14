@@ -113,8 +113,8 @@ var DeviceOrientationController = function ( object, domElement ) {
 		startY = currentY = event.pageY;
 
 		// Set consistent scroll speed based on current viewport width/height
-		scrollSpeedX = ( 1200 / window.innerWidth ) * 0.1;
-		scrollSpeedY = ( 800 / window.innerHeight ) * 0.1;
+		scrollSpeedX = ( 1200 / window.innerWidth ) * 0.2;
+		scrollSpeedY = ( 800 / window.innerHeight ) * 0.2;
 
 		this.element.addEventListener( 'mousemove', this.onDocumentMouseMove, false );
 		this.element.addEventListener( 'mouseup', this.onDocumentMouseUp, false );
@@ -355,7 +355,7 @@ var DeviceOrientationController = function ( object, domElement ) {
 
 				objQuat.multiply( rotQuat );
 
-				this.object.quaternion = objQuat;
+				this.object.quaternion.copy( objQuat );
 
 			} else if ( appState === CONTROLLER_STATE.MANUAL_ZOOM ) {
 
@@ -382,7 +382,7 @@ var DeviceOrientationController = function ( object, domElement ) {
 
 					tmpQuat.multiply( rotQuat );
 
-					this.object.quaternion = tmpQuat;
+					this.object.quaternion.copy( tmpQuat );
 
 				}
 
@@ -423,7 +423,7 @@ var DeviceOrientationController = function ( object, domElement ) {
 				if ( this.freeze ) return;
 
 				//this.object.quaternion.slerp( deviceQuat, 0.07 ); // smoothing
-				this.object.quaternion = deviceQuat;
+				this.object.quaternion.copy( deviceQuat );
 
 			}
 
