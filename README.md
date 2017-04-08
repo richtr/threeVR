@@ -1,7 +1,7 @@
 threeVR
 =======
 
-####An orientation-aware Virtual Reality controller for [three.js](http://threejs.org) ####
+#### An orientation-aware Virtual Reality controller for [three.js](http://threejs.org) ####
 
 threeVR is a virtual reality controller that makes it easy to build device-orientation aware applications on top of the three.js library.
 
